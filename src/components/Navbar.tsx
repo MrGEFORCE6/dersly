@@ -21,6 +21,7 @@ import {
   Palette
 } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
+import { createClient } from '@/lib/supabase/client';
 import type { UserRole, AccentColor } from '@/types/database.types';
 
 export function Navbar() {
@@ -35,7 +36,9 @@ export function Navbar() {
 
   useEffect(() => {
     // Detect role from cookies or path
-    const cookieMatch = document.cookie.match(/derspompa_user_role=([^;]+)/);
+    const cookieMatch =
+      document.cookie.match(/dersly_user_role=([^;]+)/) ||
+      document.cookie.match(/derspompa_user_role=([^;]+)/);
     if (cookieMatch) {
       setUserRole(cookieMatch[1] as UserRole);
     } else if (pathname.startsWith('/student') || pathname.startsWith('/feed/students')) {
@@ -50,9 +53,19 @@ export function Navbar() {
     }
   }, [pathname]);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      const supabase = createClient();
+      await supabase.auth.signOut();
+    } catch {
+      // ignore
+    }
+    document.cookie = 'dersly_auth_token=; path=/; max-age=0';
+    document.cookie = 'dersly_user_role=; path=/; max-age=0';
+    document.cookie = 'dersly_user_id=; path=/; max-age=0';
     document.cookie = 'derspompa_auth_token=; path=/; max-age=0';
     document.cookie = 'derspompa_user_role=; path=/; max-age=0';
+    document.cookie = 'derspompa_user_id=; path=/; max-age=0';
     router.push('/login');
   };
 
@@ -194,7 +207,8 @@ export function Navbar() {
             <button
               onClick={() => {
                 setUserRole('teacher');
-                document.cookie = 'derspompa_user_role=teacher; path=/';
+                document.cookie = 'dersly_user_role=teacher; path=/; max-age=604800; SameSite=Lax';
+                document.cookie = 'derspompa_user_role=teacher; path=/; max-age=604800; SameSite=Lax';
                 if (pathname.startsWith('/student') || pathname.startsWith('/parent')) router.push('/dashboard');
               }}
               className={`px-2 py-1 rounded-lg text-[11px] font-semibold transition-colors ${
@@ -208,7 +222,8 @@ export function Navbar() {
             <button
               onClick={() => {
                 setUserRole('student');
-                document.cookie = 'derspompa_user_role=student; path=/';
+                document.cookie = 'dersly_user_role=student; path=/; max-age=604800; SameSite=Lax';
+                document.cookie = 'derspompa_user_role=student; path=/; max-age=604800; SameSite=Lax';
                 if (pathname.startsWith('/dashboard') || pathname.startsWith('/feed/teachers')) router.push('/student');
               }}
               className={`px-2 py-1 rounded-lg text-[11px] font-semibold transition-colors ${
@@ -222,7 +237,8 @@ export function Navbar() {
             <button
               onClick={() => {
                 setUserRole('parent');
-                document.cookie = 'derspompa_user_role=parent; path=/';
+                document.cookie = 'dersly_user_role=parent; path=/; max-age=604800; SameSite=Lax';
+                document.cookie = 'derspompa_user_role=parent; path=/; max-age=604800; SameSite=Lax';
                 if (pathname.startsWith('/dashboard') || pathname.startsWith('/feed/teachers')) router.push('/parent');
               }}
               className={`px-2 py-1 rounded-lg text-[11px] font-semibold transition-colors ${

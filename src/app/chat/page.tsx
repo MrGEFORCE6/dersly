@@ -101,8 +101,12 @@ export default function ChatPage() {
   useEffect(() => {
     async function initUser() {
       if (typeof window !== 'undefined') {
-        const storedRole = localStorage.getItem('derspompa_current_role');
-        const storedId = localStorage.getItem('derspompa_current_user_id');
+        const storedRole =
+          localStorage.getItem('dersly_current_role') ||
+          localStorage.getItem('derspompa_current_role');
+        const storedId =
+          localStorage.getItem('dersly_current_user_id') ||
+          localStorage.getItem('derspompa_current_user_id');
         if (storedRole === 'teacher' || storedId === currentTeacher.id) {
           setCurrentUser(currentTeacher);
           setSelectedFriend(friends[0]); // student

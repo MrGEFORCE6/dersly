@@ -1,15 +1,18 @@
 {
   "expo": {
-    "name": "DersPompa Mobile",
-    "slug": "ders-pompa-mobile",
+    "name": "Dersly",
+    "slug": "dersly-mobile",
     "version": "1.0.0",
+    "scheme": "dersly",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
     "newArchEnabled": false,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.dersly.app"
     },
     "android": {
+      "package": "com.dersly.app",
       "adaptiveIcon": {
         "backgroundColor": "#0f172a"
       }

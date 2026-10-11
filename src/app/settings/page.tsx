@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useTheme, ACCENT_PALETTES } from '@/context/ThemeContext';
 import type { ThemeMode, AccentColor, Profile } from '@/types/database.types';
 import { currentTeacher } from '@/data/mockData';
+import { createClient } from '@/lib/supabase/client';
 import { fetchProfiles, updateProfile, uploadFileToStorage } from '@/lib/services/supabaseService';
 import { 
   Palette, 
@@ -32,13 +33,24 @@ export default function SettingsPage() {
   const router = useRouter();
   const { mode, accent, setMode, setAccent, resolvedMode, accentClasses } = useTheme();
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      const supabase = createClient();
+      await supabase.auth.signOut();
+    } catch {
+      // ignore
+    }
     if (typeof document !== 'undefined') {
+      document.cookie = 'dersly_auth_token=; path=/; max-age=0';
+      document.cookie = 'dersly_user_role=; path=/; max-age=0';
+      document.cookie = 'dersly_user_id=; path=/; max-age=0';
       document.cookie = 'derspompa_auth_token=; path=/; max-age=0';
       document.cookie = 'derspompa_user_role=; path=/; max-age=0';
       document.cookie = 'derspompa_user_id=; path=/; max-age=0';
     }
     if (typeof window !== 'undefined') {
+      localStorage.removeItem('dersly_current_user_id');
+      localStorage.removeItem('dersly_current_role');
       localStorage.removeItem('derspompa_current_user_id');
       localStorage.removeItem('derspompa_current_role');
     }
@@ -75,8 +87,14 @@ export default function SettingsPage() {
       let currentId = 't-001';
       let currentRole = 'teacher';
       if (typeof window !== 'undefined') {
-        currentId = localStorage.getItem('derspompa_current_user_id') || 't-001';
-        currentRole = localStorage.getItem('derspompa_current_role') || 'teacher';
+        currentId =
+          localStorage.getItem('dersly_current_user_id') ||
+          localStorage.getItem('derspompa_current_user_id') ||
+          't-001';
+        currentRole =
+          localStorage.getItem('dersly_current_role') ||
+          localStorage.getItem('derspompa_current_role') ||
+          'teacher';
       }
 
       // Strict RBAC: only load current user's own profile

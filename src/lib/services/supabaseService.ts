@@ -128,7 +128,7 @@ function setLocalData<T>(key: string, data: T[]) {
 }
 
 // Check if Supabase keys are real (not placeholder)
-function isRealSupabaseConfigured(): boolean {
+export function isRealSupabaseConfigured(): boolean {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   return Boolean(
@@ -485,7 +485,7 @@ export async function uploadFileToStorage(
     }
   }
 
-  return `https://storage.derspompa.com/${bucketName}/${cleanFileName}`;
+  return `https://storage.dersly.app/${bucketName}/${cleanFileName}`;
 }
 
 /* ==============================================================================

@@ -38,7 +38,7 @@ export default function Home() {
       <header className="sticky top-0 z-50 transition-colors glass-nav">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           <div className="flex items-center gap-8">
-            <Link href="/" className="flex items-center gap-3 group" aria-label="Dersly Ana Sayfa">
+            <Link href="/" className="flex items-center gap-3 group" aria-label="Dersly - Özel Ders ve Öğrenci Yönetimi">
               <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 flex items-center justify-center shadow-lg shadow-indigo-500/25 group-hover:scale-105 transition-transform text-white">
                 <GraduationCap className="w-6 h-6" />
               </div>
@@ -415,32 +415,32 @@ export default function Home() {
 
           <div>
             <h3 className="font-bold text-white mb-3 text-xs">Hızlı Bağlantılar</h3>
-            <ul className="space-y-2">
-              <li><Link href="/dashboard" className="hover:text-white transition-colors">Eğitmen Portalı</Link></li>
-              <li><Link href="/student" className="hover:text-white transition-colors">Öğrenci & Veli Portalı</Link></li>
-              <li><Link href="/feed/students" className="hover:text-white transition-colors">Öğrenci Kampüsü</Link></li>
-              <li><Link href="/profile" className="hover:text-white transition-colors">Sosyal Profil & Netler</Link></li>
-              <li><Link href="/settings" className="hover:text-white transition-colors">Tema & Ayarlar</Link></li>
+            <ul className="space-y-1.5 text-xs">
+              <li><Link href="/dashboard" className="py-1.5 inline-flex items-center hover:text-white transition-colors">Eğitmen Portalı</Link></li>
+              <li><Link href="/student" className="py-1.5 inline-flex items-center hover:text-white transition-colors">Öğrenci & Veli Portalı</Link></li>
+              <li><Link href="/feed/students" className="py-1.5 inline-flex items-center hover:text-white transition-colors">Öğrenci Kampüsü</Link></li>
+              <li><Link href="/profile" className="py-1.5 inline-flex items-center hover:text-white transition-colors">Sosyal Profil & Netler</Link></li>
+              <li><Link href="/settings" className="py-1.5 inline-flex items-center hover:text-white transition-colors">Tema & Ayarlar</Link></li>
             </ul>
           </div>
 
           <div>
             <h3 className="font-bold text-white mb-3 text-xs">Kurumsal & Yasal</h3>
-            <ul className="space-y-2 text-[11px]">
+            <ul className="space-y-1.5 text-xs">
               <li>
-                <Link href="/privacy" className="hover:text-white transition-colors flex items-center gap-1.5">
+                <Link href="/privacy" className="py-1.5 hover:text-white transition-colors inline-flex items-center gap-1.5">
                   <Shield className="w-3.5 h-3.5 text-indigo-400" />
                   <span>KVKK & Gizlilik Politikası</span>
                 </Link>
               </li>
               <li>
-                <Link href="/terms" className="hover:text-white transition-colors flex items-center gap-1.5">
+                <Link href="/terms" className="py-1.5 hover:text-white transition-colors inline-flex items-center gap-1.5">
                   <Scale className="w-3.5 h-3.5 text-amber-400" />
                   <span>Kullanım Koşulları & İptal</span>
                 </Link>
               </li>
               <li>
-                <Link href="/contact" className="hover:text-white transition-colors flex items-center gap-1.5">
+                <Link href="/contact" className="py-1.5 hover:text-white transition-colors inline-flex items-center gap-1.5">
                   <Mail className="w-3.5 h-3.5 text-emerald-400" />
                   <span>İletişim & Müşteri Desteği</span>
                 </Link>
@@ -450,14 +450,14 @@ export default function Home() {
 
           <div>
             <h3 className="font-bold text-white mb-3 text-xs">Güvenlik & Gizlilik</h3>
-            <p className="text-[11px] text-slate-500 mb-3">
+            <p className="text-xs text-slate-400 mb-3 leading-relaxed">
               Öğrenci sınav istatistikleri ve veli iletişim bilgileri satır düzeyinde veri izolasyonu politikalarıyla korunmaktadır.
             </p>
-            <span className="text-[10px] font-mono text-indigo-400">Güvenilir ve Kesintisiz Altyapı</span>
+            <span className="text-[11px] font-mono text-indigo-400">Güvenilir ve Kesintisiz Altyapı</span>
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 mt-8 pt-6 border-t border-slate-900 text-center text-[11px] text-slate-600">
+        <div className="max-w-7xl mx-auto px-4 mt-8 pt-6 border-t border-slate-800 text-center text-xs text-slate-400">
           Dersly © 2026 • Tüm Hakları Saklıdır.
         </div>
       </footer>

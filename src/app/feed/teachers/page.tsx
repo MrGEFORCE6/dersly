@@ -60,7 +60,9 @@ export default function TeachersLoungeFeedPage() {
 
   useEffect(() => {
     // Check role from cookies
-    const cookieMatch = document.cookie.match(/derspompa_user_role=([^;]+)/);
+    const cookieMatch =
+      document.cookie.match(/dersly_user_role=([^;]+)/) ||
+      document.cookie.match(/derspompa_user_role=([^;]+)/);
     if (cookieMatch) {
       setUserRole(cookieMatch[1] as any);
     }

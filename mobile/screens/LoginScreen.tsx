@@ -34,7 +34,7 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
           <View style={styles.logoBadge}>
             <Text style={styles.logoEmoji}>✨</Text>
           </View>
-          <Text style={styles.title}>DersPompa</Text>
+          <Text style={styles.title}>Dersly</Text>
           <Text style={styles.subtitle}>Öğrenci & Veli Takip Portalı</Text>
         </View>
 

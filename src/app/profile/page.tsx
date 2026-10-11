@@ -59,8 +59,14 @@ export default function ProfilePage() {
         let currentId = 's-001';
         let currentRole = 'student';
         if (typeof window !== 'undefined') {
-          currentId = localStorage.getItem('derspompa_current_user_id') || 's-001';
-          currentRole = localStorage.getItem('derspompa_current_role') || 'student';
+          currentId =
+            localStorage.getItem('dersly_current_user_id') ||
+            localStorage.getItem('derspompa_current_user_id') ||
+            's-001';
+          currentRole =
+            localStorage.getItem('dersly_current_role') ||
+            localStorage.getItem('derspompa_current_role') ||
+            'student';
         }
 
         const activeUser = dbProfiles.find((p) => p.id === currentId) || 

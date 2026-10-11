@@ -144,18 +144,23 @@ function ThemeInnerProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     setMounted(true);
-    const savedAccent = (localStorage.getItem('derspompa_theme_accent') as AccentColor) || 'system';
+    const savedAccent =
+      (localStorage.getItem('dersly_theme_accent') as AccentColor) ||
+      (localStorage.getItem('derspompa_theme_accent') as AccentColor) ||
+      'system';
     setAccentState(savedAccent);
     document.documentElement.setAttribute('data-accent', savedAccent);
   }, []);
 
   const handleSetMode = (newMode: ThemeMode) => {
     setTheme(newMode);
+    localStorage.setItem('dersly_theme_mode', newMode);
     localStorage.setItem('derspompa_theme_mode', newMode);
   };
 
   const handleSetAccent = (newAccent: AccentColor) => {
     setAccentState(newAccent);
+    localStorage.setItem('dersly_theme_accent', newAccent);
     localStorage.setItem('derspompa_theme_accent', newAccent);
     document.documentElement.setAttribute('data-accent', newAccent);
   };

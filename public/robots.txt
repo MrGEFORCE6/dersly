@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard/
+Disallow: /student/
+Disallow: /parent/
+Disallow: /settings/
+Disallow: /messages/
+Disallow: /api/
+
+Sitemap: https://rad-marigold-ff55c6.netlify.app/sitemap.xml

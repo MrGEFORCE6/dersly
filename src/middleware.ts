@@ -4,9 +4,13 @@ import type { NextRequest } from 'next/server';
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Retrieve auth & role cookies
-  const authToken = request.cookies.get('derspompa_auth_token')?.value;
-  const userRole = request.cookies.get('derspompa_user_role')?.value;
+  // Retrieve auth & role cookies (supports dersly standard and legacy fallback)
+  const authToken =
+    request.cookies.get('dersly_auth_token')?.value ||
+    request.cookies.get('derspompa_auth_token')?.value;
+  const userRole =
+    request.cookies.get('dersly_user_role')?.value ||
+    request.cookies.get('derspompa_user_role')?.value;
 
   // Check if Supabase session cookie is present
   const allCookies = request.cookies.getAll();
