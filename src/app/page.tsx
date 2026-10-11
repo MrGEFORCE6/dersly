@@ -54,11 +54,12 @@ export default function Home() {
 
             {/* Desktop Navigation Links */}
             <nav className="hidden lg:flex items-center gap-5 text-xs font-semibold text-slate-300" aria-label="Ana Menü">
+              <Link href="/features" className="hover:text-white transition-colors">Özellikler</Link>
+              <Link href="/pricing" className="hover:text-white transition-colors">Fiyatlandırma</Link>
               <Link href="/feed/students" className="hover:text-white transition-colors">Öğrenci Kampüsü ✨</Link>
               <Link href="/feed/teachers" className="hover:text-white transition-colors">Öğretmenler Odası 🔒</Link>
-              <Link href="/parent" className="hover:text-white transition-colors">Veli Portalı</Link>
-              <Link href="/student/library" className="hover:text-white transition-colors">Kitaplık (OCR)</Link>
-              <a href="#fiyatlandirma" className="hover:text-white transition-colors">Fiyatlandırma</a>
+              <Link href="/faq" className="hover:text-white transition-colors">S.S.S.</Link>
+              <Link href="/help" className="hover:text-white transition-colors">Yardım</Link>
             </nav>
           </div>
 
@@ -416,11 +417,12 @@ export default function Home() {
           <div>
             <h3 className="font-bold text-white mb-3 text-xs">Hızlı Bağlantılar</h3>
             <ul className="space-y-1.5 text-xs">
-              <li><Link href="/dashboard" className="py-1.5 inline-flex items-center hover:text-white transition-colors">Eğitmen Portalı</Link></li>
-              <li><Link href="/student" className="py-1.5 inline-flex items-center hover:text-white transition-colors">Öğrenci & Veli Portalı</Link></li>
+              <li><Link href="/dashboard" className="py-1.5 inline-flex items-center hover:text-white transition-colors">Öğretmen Portalı</Link></li>
+              <li><Link href="/student" className="py-1.5 inline-flex items-center hover:text-white transition-colors">Öğrenci Portalı</Link></li>
+              <li><Link href="/features" className="py-1.5 inline-flex items-center hover:text-white transition-colors">Platform Özellikleri</Link></li>
+              <li><Link href="/pricing" className="py-1.5 inline-flex items-center hover:text-white transition-colors">Fiyatlandırma & Planlar</Link></li>
               <li><Link href="/feed/students" className="py-1.5 inline-flex items-center hover:text-white transition-colors">Öğrenci Kampüsü</Link></li>
-              <li><Link href="/profile" className="py-1.5 inline-flex items-center hover:text-white transition-colors">Sosyal Profil & Netler</Link></li>
-              <li><Link href="/settings" className="py-1.5 inline-flex items-center hover:text-white transition-colors">Tema & Ayarlar</Link></li>
+              <li><Link href="/faq" className="py-1.5 inline-flex items-center hover:text-white transition-colors">Sık Sorulan Sorular</Link></li>
             </ul>
           </div>
 
@@ -428,32 +430,51 @@ export default function Home() {
             <h3 className="font-bold text-white mb-3 text-xs">Kurumsal & Yasal</h3>
             <ul className="space-y-1.5 text-xs">
               <li>
+                <Link href="/about" className="py-1.5 hover:text-white transition-colors inline-flex items-center gap-1.5">
+                  <span>Hakkımızda</span>
+                </Link>
+              </li>
+              <li>
                 <Link href="/privacy" className="py-1.5 hover:text-white transition-colors inline-flex items-center gap-1.5">
                   <Shield className="w-3.5 h-3.5 text-indigo-400" />
-                  <span>KVKK & Gizlilik Politikası</span>
+                  <span>Gizlilik Politikası</span>
                 </Link>
               </li>
               <li>
                 <Link href="/terms" className="py-1.5 hover:text-white transition-colors inline-flex items-center gap-1.5">
                   <Scale className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Kullanım Koşulları & İptal</span>
+                  <span>Kullanım Koşulları</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/kvkk" className="py-1.5 hover:text-white transition-colors inline-flex items-center gap-1.5">
+                  <span>KVKK Aydınlatma Metni</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/cookies" className="py-1.5 hover:text-white transition-colors inline-flex items-center gap-1.5">
+                  <span>Çerez Politikası</span>
                 </Link>
               </li>
               <li>
                 <Link href="/contact" className="py-1.5 hover:text-white transition-colors inline-flex items-center gap-1.5">
                   <Mail className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>İletişim & Müşteri Desteği</span>
+                  <span>İletişim & Destek</span>
                 </Link>
               </li>
             </ul>
           </div>
 
           <div>
-            <h3 className="font-bold text-white mb-3 text-xs">Güvenlik & Gizlilik</h3>
+            <h3 className="font-bold text-white mb-3 text-xs">Şeffaflık & Güvenlik</h3>
             <p className="text-xs text-slate-400 mb-3 leading-relaxed">
-              Öğrenci sınav istatistikleri ve veli iletişim bilgileri satır düzeyinde veri izolasyonu politikalarıyla korunmaktadır.
+              Öğrenci akademik verileri ve öğretmen eğitim materyalleri PostgreSQL satır düzeyinde veri izolasyonu (RLS) politikalarıyla korunmaktadır.
             </p>
-            <span className="text-[11px] font-mono text-indigo-400">Güvenilir ve Kesintisiz Altyapı</span>
+            <div className="space-y-1 text-xs">
+              <div><Link href="/status" className="text-indigo-400 hover:text-indigo-300 transition-colors">Sistem Durumu (Status) 🟢</Link></div>
+              <div><Link href="/changelog" className="text-slate-400 hover:text-slate-200 transition-colors">Sürüm Notları (Changelog)</Link></div>
+              <div><Link href="/roadmap" className="text-slate-400 hover:text-slate-200 transition-colors">Geliştirme Planı (Roadmap)</Link></div>
+            </div>
           </div>
         </div>
 

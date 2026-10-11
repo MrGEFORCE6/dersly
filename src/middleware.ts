@@ -20,6 +20,13 @@ export function middleware(request: NextRequest) {
 
   const isAuthenticated = Boolean(authToken || hasSupabaseSession);
 
+  // Redirect legacy /parent route permanently to /student
+  if (pathname.startsWith('/parent')) {
+    const studentUrl = request.nextUrl.clone();
+    studentUrl.pathname = '/student';
+    return NextResponse.redirect(studentUrl);
+  }
+
   // 1. Dashboard protection: Teachers only!
   if (pathname.startsWith('/dashboard')) {
     if (!isAuthenticated) {
@@ -29,8 +36,8 @@ export function middleware(request: NextRequest) {
       return NextResponse.redirect(loginUrl);
     }
 
-    // Role check: Students and Parents MUST be blocked from teacher dashboard
-    if (userRole === 'student' || userRole === 'parent') {
+    // Role check: Students MUST be blocked from teacher dashboard
+    if (userRole === 'student') {
       const studentUrl = request.nextUrl.clone();
       studentUrl.pathname = '/student';
       studentUrl.searchParams.set('denied', 'teacher_only');
@@ -47,7 +54,7 @@ export function middleware(request: NextRequest) {
       return NextResponse.redirect(loginUrl);
     }
 
-    if (userRole === 'student' || userRole === 'parent') {
+    if (userRole === 'student') {
       const deniedUrl = request.nextUrl.clone();
       deniedUrl.pathname = '/feed/students';
       deniedUrl.searchParams.set('denied', 'teachers_lounge_forbidden');
@@ -62,7 +69,6 @@ export function middleware(request: NextRequest) {
     '/profile',
     '/chat',
     '/messages',
-    '/parent',
     '/feed/students',
   ].some((route) => pathname.startsWith(route));
 
@@ -80,12 +86,12 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
+    '/parent/:path*',
     '/dashboard/:path*',
     '/feed/teachers/:path*',
     '/feed/students/:path*',
     '/student/:path*',
     '/messages/:path*',
-    '/parent/:path*',
     '/settings/:path*',
     '/profile/:path*',
     '/chat/:path*',

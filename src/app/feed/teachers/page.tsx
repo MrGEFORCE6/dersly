@@ -30,7 +30,7 @@ import {
 import type { Post, Comment, Profile } from '@/types/database.types';
 
 export default function TeachersLoungeFeedPage() {
-  const [userRole, setUserRole] = useState<'teacher' | 'student' | 'parent'>('teacher');
+  const [userRole, setUserRole] = useState<'teacher' | 'student'>('teacher');
   const [posts, setPosts] = useState<Post[]>([]);
   const [currentUser, setCurrentUser] = useState<Profile>({
     id: 't-001',
@@ -132,8 +132,8 @@ export default function TeachersLoungeFeedPage() {
     showToast('✓ Özel Gönderi Köprüsü linki kopyalandı! Bu linkle öğrenciniz sadece bu gönderiyi görebilir.');
   };
 
-  // SECURITY FIREWALL CHECK FOR STUDENTS & PARENTS
-  if (userRole === 'student' || userRole === 'parent') {
+  // SECURITY FIREWALL CHECK FOR STUDENTS
+  if (userRole === 'student') {
     return (
       <div className="min-h-screen bg-[#FBFBF9] dark:bg-[#0F172A] text-slate-800 dark:text-slate-100 flex flex-col transition-colors">
         <Navbar />

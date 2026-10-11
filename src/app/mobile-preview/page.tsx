@@ -23,7 +23,7 @@ import {
 
 export default function MobilePreviewPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [role, setRole] = useState<'student' | 'parent'>('student');
+  const [role, setRole] = useState<'student' | 'teacher'>('student');
   const [studentName, setStudentName] = useState('Zeynep Kaya');
   
   // Homework State
@@ -235,14 +235,14 @@ export default function MobilePreviewPage() {
                     🎓 Öğrenci Girişi
                   </button>
                   <button
-                    onClick={() => setRole('parent')}
+                    onClick={() => setRole('teacher')}
                     className={`flex-1 py-2 rounded-xl text-xs font-semibold transition-all ${
-                      role === 'parent'
+                      role === 'teacher'
                         ? 'bg-[#8b5cf6] text-white shadow'
                         : 'text-slate-400 hover:text-white'
                     }`}
                   >
-                    👨‍👩‍👦 Veli Girişi
+                    👨‍🏫 Öğretmen Girişi
                   </button>
                 </div>
 

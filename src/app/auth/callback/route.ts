@@ -28,13 +28,18 @@ export async function GET(request: NextRequest) {
           .eq('id', user.id)
           .maybeSingle();
 
-        let resolvedRole: 'teacher' | 'student' | 'parent' = 'student';
+        let resolvedRole: 'teacher' | 'student' = 'student';
 
-        if (profile?.role) {
-          resolvedRole = profile.role as 'teacher' | 'student' | 'parent';
+        if (profile?.role === 'teacher') {
+          resolvedRole = 'teacher';
         } else {
+          resolvedRole = 'student';
+        }
+
+        if (!profile) {
           // If profile doesn't exist yet, insert new profile from OAuth metadata
-          const preferredRole = (roleParam === 'teacher' || roleParam === 'parent') ? roleParam : 'student';
+          // Security: Default new Google logins to 'student' unless teacher was explicitly requested
+          const preferredRole: 'teacher' | 'student' = roleParam === 'teacher' ? 'teacher' : 'student';
           resolvedRole = preferredRole;
 
           await supabase.from('profiles').upsert({
@@ -49,12 +54,7 @@ export async function GET(request: NextRequest) {
         }
 
         // 2. Validate redirect destination against open-redirect attacks
-        let targetPath = '/student';
-        if (resolvedRole === 'teacher') {
-          targetPath = '/dashboard';
-        } else if (resolvedRole === 'parent') {
-          targetPath = '/parent';
-        }
+        let targetPath = resolvedRole === 'teacher' ? '/dashboard' : '/student';
 
         if (nextParam && nextParam.startsWith('/') && !nextParam.startsWith('//')) {
           targetPath = nextParam;

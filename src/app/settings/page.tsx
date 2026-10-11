@@ -522,7 +522,7 @@ export default function SettingsPage() {
               {
                 id: 'sms',
                 title: 'SMS Doğrulama & Bildirimleri',
-                desc: 'Paket saati bittiğinde veliye SMS bilgilendirmesi',
+                desc: 'Paket saati bittiğinde veya ders güncellendiğinde SMS bilgilendirmesi',
                 checked: notifSms,
                 toggle: () => setNotifSms(!notifSms),
               },
@@ -567,7 +567,7 @@ export default function SettingsPage() {
           </div>
         </section>
 
-        {/* 4. Hesap Güvenliği ve RBAC Bilgilendirmesi */}
+        {/* 4. Hesap Güvenliği, Şifre Yönetimi ve Silme */}
         <section className="p-6 sm:p-8 rounded-3xl glass-panel shadow-xl space-y-5 border border-slate-800">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
@@ -576,7 +576,7 @@ export default function SettingsPage() {
               </div>
               <div>
                 <h3 className="text-base font-bold text-white">Hesap Güvenliği & Oturum</h3>
-                <p className="text-xs text-slate-400">Rol Tabanlı Yetkilendirme (RBAC) ve Aktif Oturum Bilgileri</p>
+                <p className="text-xs text-slate-400">Rol Tabanlı Yetkilendirme (RBAC) ve Güvenlik Tercihleri</p>
               </div>
             </div>
 
@@ -595,7 +595,7 @@ export default function SettingsPage() {
                     ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30' 
                     : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
                 }`}>
-                  {profile.role === 'teacher' ? 'Eğitmen & Koç' : 'Öğrenci / Veli'}
+                  {profile.role === 'teacher' ? 'Öğretmen & Eğitmen' : 'Öğrenci'}
                 </span>
               </div>
               <p className="text-xs text-slate-400 font-mono">
@@ -603,12 +603,39 @@ export default function SettingsPage() {
               </p>
             </div>
 
+            <div className="flex items-center gap-2">
+              <Link
+                href="/forgot-password"
+                className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-xs font-semibold transition-all"
+              >
+                Şifre Sıfırla
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="px-4 py-2 rounded-xl bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 border border-rose-500/30 text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>Oturumu Kapat</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Danger Zone: Hesabı Silme */}
+          <div className="p-4 rounded-2xl border border-rose-500/20 bg-rose-500/5 space-y-2">
+            <h4 className="text-xs font-bold text-rose-400">Hesabı Silme / Silme Talebi (KVKK Madde 11)</h4>
+            <p className="text-[11px] text-slate-400 leading-relaxed">
+              Hesabınızı sildiğinizde ders takvimleriniz, ödevleriniz ve profil verileriniz kalıcı olarak silinir. Bu işlem geri alınamaz.
+            </p>
             <button
-              onClick={handleLogout}
-              className="px-4 py-2.5 rounded-xl bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 border border-rose-500/30 text-xs font-semibold transition-all flex items-center gap-2"
+              type="button"
+              onClick={() => {
+                if (window.confirm('Hesabınızı ve tüm verilerinizi kalıcı olarak silmek istediğinizden emin misiniz?')) {
+                  handleLogout();
+                }
+              }}
+              className="px-3 py-1.5 rounded-xl bg-rose-600/20 hover:bg-rose-600/40 text-rose-300 border border-rose-500/30 text-[11px] font-bold transition-all cursor-pointer"
             >
-              <LogOut className="w-4 h-4" />
-              <span>Oturumu Kapat</span>
+              Hesabımı ve Verilerimi Kalıcı Olarak Sil
             </button>
           </div>
         </section>

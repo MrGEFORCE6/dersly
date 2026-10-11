@@ -44,9 +44,6 @@ export function Navbar() {
     } else if (pathname.startsWith('/student') || pathname.startsWith('/feed/students')) {
       setUserRole('student');
       setUserName('Zeynep Kaya');
-    } else if (pathname.startsWith('/parent')) {
-      setUserRole('parent');
-      setUserName('Mehmet Kaya (Veli)');
     } else if (pathname.startsWith('/dashboard') || pathname.startsWith('/feed/teachers')) {
       setUserRole('teacher');
       setUserName('Ahmet Hoca');
@@ -159,21 +156,6 @@ export function Navbar() {
             </>
           )}
 
-          {/* PARENT LINK */}
-          {userRole === 'parent' && (
-            <Link
-              href="/parent"
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors flex items-center gap-1.5 ${
-                pathname.startsWith('/parent')
-                  ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-sm border border-stone-200 dark:border-slate-700'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-stone-100/60 dark:hover:bg-slate-800/60'
-              }`}
-            >
-              <Users className="w-3.5 h-3.5" />
-              Veli Raporu & Takip
-            </Link>
-          )}
-
           {/* COMMON SOCIAL LINKS */}
           <Link
             href="/feed/students"
@@ -209,7 +191,7 @@ export function Navbar() {
                 setUserRole('teacher');
                 document.cookie = 'dersly_user_role=teacher; path=/; max-age=604800; SameSite=Lax';
                 document.cookie = 'derspompa_user_role=teacher; path=/; max-age=604800; SameSite=Lax';
-                if (pathname.startsWith('/student') || pathname.startsWith('/parent')) router.push('/dashboard');
+                if (pathname.startsWith('/student')) router.push('/dashboard');
               }}
               className={`px-2 py-1 rounded-lg text-[11px] font-semibold transition-colors ${
                 userRole === 'teacher'
@@ -217,7 +199,7 @@ export function Navbar() {
                   : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
               }`}
             >
-              Hoca
+              Öğretmen
             </button>
             <button
               onClick={() => {
@@ -233,21 +215,6 @@ export function Navbar() {
               }`}
             >
               Öğrenci
-            </button>
-            <button
-              onClick={() => {
-                setUserRole('parent');
-                document.cookie = 'dersly_user_role=parent; path=/; max-age=604800; SameSite=Lax';
-                document.cookie = 'derspompa_user_role=parent; path=/; max-age=604800; SameSite=Lax';
-                if (pathname.startsWith('/dashboard') || pathname.startsWith('/feed/teachers')) router.push('/parent');
-              }}
-              className={`px-2 py-1 rounded-lg text-[11px] font-semibold transition-colors ${
-                userRole === 'parent'
-                  ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-sm'
-                  : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
-              }`}
-            >
-              Veli
             </button>
           </div>
 
@@ -370,16 +337,6 @@ export function Navbar() {
                 <BookOpen className="w-4 h-4 text-indigo-500" /> Akıllı Kitaplığım
               </Link>
             </>
-          )}
-
-          {userRole === 'parent' && (
-            <Link
-              href="/parent"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center gap-2 p-2 rounded-xl text-sm font-semibold text-slate-800 dark:text-slate-200 hover:bg-stone-100 dark:hover:bg-slate-800"
-            >
-              <Users className="w-4 h-4 text-indigo-500" /> Veli Raporu
-            </Link>
           )}
 
           <Link

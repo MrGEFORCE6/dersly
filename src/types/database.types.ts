@@ -6,7 +6,7 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[];
 
-export type UserRole = 'teacher' | 'student' | 'parent';
+export type UserRole = 'teacher' | 'student';
 export type LessonStatus = 'scheduled' | 'completed' | 'cancelled';
 export type HomeworkStatus = 'pending' | 'submitted' | 'reviewed';
 export type PaymentStatus = 'pending' | 'partially_paid' | 'completed' | 'cancelled';

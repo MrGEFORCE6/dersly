@@ -24,7 +24,7 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const supabase = createClient();
 
-  const [roleTab, setRoleTab] = useState<'student_parent' | 'teacher'>('student_parent');
+  const [roleTab, setRoleTab] = useState<'student' | 'teacher'>('student');
   const [emailOrPhone, setEmailOrPhone] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -48,7 +48,7 @@ function LoginForm() {
     }
   }, [searchParams]);
 
-  const setAuthSession = (role: 'teacher' | 'student' | 'parent', userId: string) => {
+  const setAuthSession = (role: 'teacher' | 'student', userId: string) => {
     if (typeof document !== 'undefined') {
       const maxAge = 604800; // 7 days
       document.cookie = `dersly_auth_token=auth_${userId}; path=/; max-age=${maxAge}; SameSite=Lax`;
@@ -134,13 +134,16 @@ function LoginForm() {
             .eq('id', data.user.id)
             .maybeSingle();
 
-          const resolvedRole = (profile?.role as 'teacher' | 'student' | 'parent') || targetRole;
+          const resolvedRole: 'teacher' | 'student' =
+            profile?.role === 'teacher'
+              ? 'teacher'
+              : profile?.role === 'student'
+              ? 'student'
+              : targetRole;
           setAuthSession(resolvedRole, data.user.id);
 
           if (resolvedRole === 'teacher') {
             router.push('/dashboard');
-          } else if (resolvedRole === 'parent') {
-            router.push('/parent');
           } else {
             router.push('/student');
           }
@@ -165,7 +168,7 @@ function LoginForm() {
     }
   };
 
-  const handleDevTestLogin = (targetRole: 'teacher' | 'student' | 'parent') => {
+  const handleDevTestLogin = (targetRole: 'teacher' | 'student') => {
     setIsLoading(true);
     const targetId = targetRole === 'teacher' ? 't-001' : 's-001';
     setAuthSession(targetRole, targetId);
@@ -173,8 +176,6 @@ function LoginForm() {
     setTimeout(() => {
       if (targetRole === 'teacher') {
         router.push('/dashboard');
-      } else if (targetRole === 'parent') {
-        router.push('/parent');
       } else {
         router.push('/student');
       }
@@ -190,7 +191,7 @@ function LoginForm() {
         </div>
         <h1 className="text-2xl font-black tracking-tight text-white">Platforma Giriş Yap</h1>
         <p className="text-xs text-slate-400">
-          Eğitmen, öğrenci veya veli hesabınıza güvenle bağlanın.
+          Öğrenci veya öğretmen hesabınıza güvenle bağlanın.
         </p>
       </div>
 
@@ -205,15 +206,15 @@ function LoginForm() {
       <div className="grid grid-cols-2 p-1 rounded-2xl bg-slate-900/60 border border-slate-700/60">
         <button
           type="button"
-          onClick={() => setRoleTab('student_parent')}
+          onClick={() => setRoleTab('student')}
           className={`py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
-            roleTab === 'student_parent'
+            roleTab === 'student'
               ? 'bg-indigo-600 text-white shadow-md'
               : 'text-slate-400 hover:text-white'
           }`}
         >
           <Users className="w-3.5 h-3.5" />
-          <span>Öğrenci & Veli</span>
+          <span>Öğrenci Girişi</span>
         </button>
         <button
           type="button"
@@ -286,7 +287,7 @@ function LoginForm() {
         <div>
           <div className="flex items-center justify-between mb-1.5">
             <label htmlFor="login-password" className="text-xs font-semibold text-slate-300">Şifre</label>
-            <Link href="/contact" className="text-[11px] text-indigo-400 hover:text-indigo-300">Şifremi Unuttum</Link>
+            <Link href="/forgot-password" className="text-[11px] text-indigo-400 hover:text-indigo-300">Şifremi Unuttum</Link>
           </div>
           <div className="relative">
             <input
@@ -318,6 +319,14 @@ function LoginForm() {
           <span>{isLoading ? 'Giriş Yapılıyor...' : 'Giriş Yap'}</span>
           <ArrowRight className="w-4 h-4" />
         </button>
+
+        {/* Register CTA */}
+        <div className="text-center pt-1">
+          <span className="text-xs text-slate-400">Henüz hesabınız yok mu? </span>
+          <Link href="/register" className="text-xs font-bold text-indigo-400 hover:text-indigo-300">
+            Hemen Kayıt Olun
+          </Link>
+        </div>
       </form>
 
       {/* Developer / Quick Preview Toggle */}
@@ -339,7 +348,7 @@ function LoginForm() {
             <p className="text-[10px] text-slate-400 leading-normal">
               Canlı Supabase kimlik sağlayıcısı yapılandırılana kadar rolleri yerel oturumla anında deneyebilirsiniz:
             </p>
-            <div className="grid grid-cols-3 gap-2 pt-1">
+            <div className="grid grid-cols-2 gap-2 pt-1">
               <button
                 type="button"
                 onClick={() => handleDevTestLogin('teacher')}
@@ -353,13 +362,6 @@ function LoginForm() {
                 className="py-1.5 px-2 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/20 text-[10px] font-bold text-center transition-colors cursor-pointer"
               >
                 👩‍🎓 Öğrenci
-              </button>
-              <button
-                type="button"
-                onClick={() => handleDevTestLogin('parent')}
-                className="py-1.5 px-2 rounded-lg bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 border border-purple-500/20 text-[10px] font-bold text-center transition-colors cursor-pointer"
-              >
-                👨‍👩‍👧 Veli
               </button>
             </div>
           </div>

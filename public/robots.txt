@@ -2,9 +2,12 @@ User-agent: *
 Allow: /
 Disallow: /dashboard/
 Disallow: /student/
-Disallow: /parent/
 Disallow: /settings/
+Disallow: /chat/
 Disallow: /messages/
+Disallow: /feed/teachers/
+Disallow: /reset-password/
+Disallow: /auth/
 Disallow: /api/
 
 Sitemap: https://rad-marigold-ff55c6.netlify.app/sitemap.xml

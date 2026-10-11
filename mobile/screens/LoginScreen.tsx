@@ -11,16 +11,16 @@ import {
 } from 'react-native';
 
 interface LoginScreenProps {
-  onLoginSuccess: (role: 'student' | 'parent', userName: string) => void;
+  onLoginSuccess: (role: 'student' | 'teacher', userName: string) => void;
 }
 
 export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
-  const [role, setRole] = useState<'student' | 'parent'>('student');
+  const [role, setRole] = useState<'student' | 'teacher'>('student');
   const [identifier, setIdentifier] = useState('0542 111 22 33');
   const [password, setPassword] = useState('••••••••');
 
   const handleLogin = () => {
-    onLoginSuccess(role, role === 'student' ? 'Zeynep Kaya' : 'Kaya Ailesi (Veli)');
+    onLoginSuccess(role, role === 'student' ? 'Zeynep Kaya' : 'Ahmet Hoca');
   };
 
   return (
@@ -35,7 +35,7 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
             <Text style={styles.logoEmoji}>✨</Text>
           </View>
           <Text style={styles.title}>Dersly</Text>
-          <Text style={styles.subtitle}>Öğrenci & Veli Takip Portalı</Text>
+          <Text style={styles.subtitle}>Öğrenci & Öğretmen Portalı</Text>
         </View>
 
         {/* Role Switcher */}
@@ -51,12 +51,12 @@ export function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.roleTab, role === 'parent' && styles.roleTabActive]}
-            onPress={() => setRole('parent')}
+            style={[styles.roleTab, role === 'teacher' && styles.roleTabActive]}
+            onPress={() => setRole('teacher')}
             activeOpacity={0.8}
           >
-            <Text style={[styles.roleTabText, role === 'parent' && styles.roleTabTextActive]}>
-              👨‍👩‍👦 Veli Girişi
+            <Text style={[styles.roleTabText, role === 'teacher' && styles.roleTabTextActive]}>
+              👨‍🏫 Öğretmen Girişi
             </Text>
           </TouchableOpacity>
         </View>
