@@ -1,0 +1,21 @@
+{
+  "expo": {
+    "name": "DersPompa Mobile",
+    "slug": "ders-pompa-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": false,
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#0f172a"
+      }
+    },
+    "plugins": [
+      "expo-asset"
+    ]
+  }
+}

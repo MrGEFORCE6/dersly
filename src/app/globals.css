@@ -1,0 +1,244 @@
+@import "tailwindcss";
+
+/* =========================================================
+   1. THEME MODE BASE VARIABLES (Light & Dark)
+   ========================================================= */
+
+:root,
+html.light {
+  /* Warm Light Theme (Göz Yormayan Sıcak Kitap/Kağıt Zemini #FBFBF9) */
+  --bg-primary: #fbfbf9;
+  --bg-secondary: #f4f4f0;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f7f7f4;
+  --text-primary: #1e293b; /* dark slate-800 */
+  --text-secondary: #475569; /* slate-600 */
+  --text-muted: #64748b; /* slate-500 */
+  --border-color: rgba(226, 232, 240, 0.95);
+  --border-highlight: rgba(203, 213, 225, 0.9);
+  --navbar-bg: rgba(251, 251, 249, 0.92);
+  
+  /* Default Accent: Sapphire */
+  --accent: #2563eb;
+  --accent-primary: #2563eb;
+  --accent-hover: #1d4ed8;
+  --accent-light: #3b82f6;
+  --accent-subtle: rgba(37, 99, 235, 0.1);
+  --accent-border: rgba(37, 99, 235, 0.28);
+  --accent-text: #2563eb;
+  --accent-glow: 0 10px 25px -5px rgba(37, 99, 235, 0.25);
+  --accent-gradient: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%);
+}
+
+html.dark {
+  /* Dark Theme (Deep Luxury Slate) */
+  --bg-primary: #030712;
+  --bg-secondary: #0b0f19;
+  --bg-card: #111827;
+  --bg-card-hover: #1f2937;
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --border-color: rgba(255, 255, 255, 0.1);
+  --border-highlight: rgba(255, 255, 255, 0.2);
+  --navbar-bg: rgba(3, 7, 18, 0.88);
+  
+  --accent-text: #60a5fa;
+  --accent-subtle: rgba(37, 99, 235, 0.16);
+  --accent-border: rgba(37, 99, 235, 0.35);
+}
+
+/* =========================================================
+   2. ACCENT COLOR PALETTES (Live Data-Accent & System)
+   ========================================================= */
+
+/* System / Auto Accent (Modern Sapphire as default system accent) */
+[data-accent="system"],
+[data-accent="auto"] {
+  --accent: #2563eb;
+  --accent-primary: #2563eb;
+  --accent-hover: #1d4ed8;
+  --accent-light: #3b82f6;
+  --accent-subtle: rgba(37, 99, 235, 0.12);
+  --accent-border: rgba(37, 99, 235, 0.28);
+  --accent-text: #2563eb;
+  --accent-glow: 0 10px 25px -5px rgba(37, 99, 235, 0.25);
+  --accent-gradient: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%);
+}
+
+html.dark[data-accent="system"],
+html.dark[data-accent="auto"] {
+  --accent-text: #60a5fa;
+  --accent-subtle: rgba(37, 99, 235, 0.18);
+  --accent-border: rgba(37, 99, 235, 0.35);
+}
+
+/* Sapphire */
+[data-accent="sapphire"],
+[data-accent="blue"] {
+  --accent: #2563eb;
+  --accent-primary: #2563eb;
+  --accent-hover: #1d4ed8;
+  --accent-light: #3b82f6;
+  --accent-subtle: rgba(37, 99, 235, 0.12);
+  --accent-border: rgba(37, 99, 235, 0.28);
+  --accent-text: #2563eb;
+  --accent-glow: 0 10px 25px -5px rgba(37, 99, 235, 0.25);
+  --accent-gradient: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+}
+
+html.dark[data-accent="sapphire"],
+html.dark[data-accent="blue"] {
+  --accent-text: #60a5fa;
+  --accent-subtle: rgba(37, 99, 235, 0.18);
+  --accent-border: rgba(37, 99, 235, 0.35);
+}
+
+/* Emerald */
+[data-accent="emerald"] {
+  --accent: #059669;
+  --accent-primary: #059669;
+  --accent-hover: #047857;
+  --accent-light: #10b981;
+  --accent-subtle: rgba(16, 185, 129, 0.12);
+  --accent-border: rgba(16, 185, 129, 0.28);
+  --accent-text: #059669;
+  --accent-glow: 0 10px 25px -5px rgba(16, 185, 129, 0.25);
+  --accent-gradient: linear-gradient(135deg, #059669 0%, #10b981 100%);
+}
+
+html.dark[data-accent="emerald"] {
+  --accent-text: #34d399;
+  --accent-subtle: rgba(16, 185, 129, 0.18);
+  --accent-border: rgba(16, 185, 129, 0.35);
+}
+
+/* Lavender */
+[data-accent="lavender"],
+[data-accent="violet"] {
+  --accent: #7c3aed;
+  --accent-primary: #7c3aed;
+  --accent-hover: #6d28d9;
+  --accent-light: #8b5cf6;
+  --accent-subtle: rgba(139, 92, 246, 0.12);
+  --accent-border: rgba(139, 92, 246, 0.28);
+  --accent-text: #7c3aed;
+  --accent-glow: 0 10px 25px -5px rgba(139, 92, 246, 0.25);
+  --accent-gradient: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+}
+
+html.dark[data-accent="lavender"],
+html.dark[data-accent="violet"] {
+  --accent-text: #c084fc;
+  --accent-subtle: rgba(139, 92, 246, 0.18);
+  --accent-border: rgba(139, 92, 246, 0.35);
+}
+
+/* Amber */
+[data-accent="amber"] {
+  --accent: #d97706;
+  --accent-primary: #d97706;
+  --accent-hover: #b45309;
+  --accent-light: #f59e0b;
+  --accent-subtle: rgba(245, 158, 11, 0.12);
+  --accent-border: rgba(245, 158, 11, 0.28);
+  --accent-text: #d97706;
+  --accent-glow: 0 10px 25px -5px rgba(245, 158, 11, 0.25);
+  --accent-gradient: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+}
+
+html.dark[data-accent="amber"] {
+  --accent-text: #fbbf24;
+  --accent-subtle: rgba(245, 158, 11, 0.18);
+  --accent-border: rgba(245, 158, 11, 0.35);
+}
+
+/* =========================================================
+   3. ROOT HTML & BODY LINKAGE
+   ========================================================= */
+
+html {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* =========================================================
+   4. ACCENT UTILITY CLASSES (Always In Sync)
+   ========================================================= */
+
+.btn-accent {
+  background-color: var(--accent-primary);
+  color: #ffffff;
+  box-shadow: var(--accent-glow);
+  transition: all 0.2s ease;
+}
+
+.btn-accent:hover {
+  background-color: var(--accent-hover);
+  transform: translateY(-1px);
+}
+
+.badge-accent {
+  background-color: var(--accent-subtle);
+  color: var(--accent-text);
+  border: 1px solid var(--accent-border);
+}
+
+.border-accent {
+  border-color: var(--accent-border);
+}
+
+.text-accent {
+  color: var(--accent-text);
+}
+
+.bg-accent-subtle {
+  background-color: var(--accent-subtle);
+}
+
+.glass-panel {
+  background: var(--bg-card);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-color);
+}
+
+html.light .glass-panel {
+  background: #ffffff;
+  border-color: rgba(226, 232, 240, 0.95);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.04);
+}
+
+.glass-nav {
+  background: var(--navbar-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* Dynamic High-Contrast Typography */
+.text-contrast-primary {
+  color: var(--text-primary);
+}
+
+.text-contrast-secondary {
+  color: var(--text-secondary);
+}
+
+.text-contrast-muted {
+  color: var(--text-muted);
+}
+
