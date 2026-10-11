@@ -1,0 +1,28 @@
+# Dersly (Eski Adıyla DersPompa)
+
+> Dersly, özel ders öğretmenleri, öğrenciler ve veliler için tasarlanmış kurumsal özel ders ve öğrenci yönetim platformudur.
+
+## Genel Bakış
+- **Platform Adı**: Dersly
+- **Canlı Adres**: https://rad-marigold-ff55c6.netlify.app/
+- **Hedef Kitle**: Özel ders veren öğretmenler, YKS/LGS öğrencileri ve veliler.
+- **Temel Yetenekler**:
+  - Şeffaf ders takvimi ve otomatik ders saati/kredi düşümü.
+  - Dijital ödev ve kaynak yönetimi (PDF ve doküman depolama).
+  - Akıllı öğrenci kitaplığı ve yapay zeka destekli konu/ünite OCR taraması.
+  - Öğrenci kampüsü ve imece soru havuzu (akran yardımlaşması).
+  - Veli izleme portalı (aylık ders saatleri, ödev başarı oranı, sesli öğretmen geri bildirimleri).
+  - Banka düzeyinde güvenli veri izolasyonu ve rol tabanlı erişim kontrolü (RBAC).
+
+## Fiyatlandırma Modeli
+- **Taban Ücret**: 50 TL / ay
+- **Öğrenci Başı Ücret**: 15 TL / aktif öğrenci / ay
+- **Taahhüt**: Taahhütsüz, koşulsuz iptal imkanı. 14 gün ücretsiz deneme. Fiyatlara KDV dahil değildir.
+
+## İletişim & Kurumsal
+- **E-posta**: destek@dersly.app
+- **Web**: https://rad-marigold-ff55c6.netlify.app/
+- **Kurumsal Sayfalar**:
+  - Gizlilik & KVKK: https://rad-marigold-ff55c6.netlify.app/privacy
+  - Kullanım Koşulları: https://rad-marigold-ff55c6.netlify.app/terms
+  - İletişim: https://rad-marigold-ff55c6.netlify.app/contact

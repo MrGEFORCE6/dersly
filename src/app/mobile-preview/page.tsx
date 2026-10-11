@@ -218,7 +218,7 @@ export default function MobilePreviewPage() {
                   <div className="w-16 h-16 rounded-2xl bg-[#1e293b] border border-purple-400/40 mx-auto flex items-center justify-center text-2xl shadow-lg shadow-purple-500/10 mb-3">
                     ✨
                   </div>
-                  <h2 className="text-2xl font-black text-white tracking-tight">DersPompa</h2>
+                  <h2 className="text-2xl font-black text-white tracking-tight">Dersly</h2>
                   <p className="text-xs text-slate-400 mt-1">Öğrenci & Veli Takip Portalı</p>
                 </div>
 
@@ -283,7 +283,7 @@ export default function MobilePreviewPage() {
 
                 <div className="text-center pt-2">
                   <span className="text-[10px] text-slate-500">
-                    DersPompa © 2026 • Güvenli Supabase Kimlik Doğrulama
+                    Dersly © 2026 • Güvenli Supabase Kimlik Doğrulama
                   </span>
                 </div>
               </div>

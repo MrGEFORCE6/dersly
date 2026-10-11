@@ -42,7 +42,10 @@ export function AddStudentInviteModal({
 
   if (!isOpen) return null;
 
-  const origin = typeof window !== 'undefined' ? window.location.origin : 'https://derspompa.app';
+  const origin =
+    typeof window !== 'undefined'
+      ? window.location.origin
+      : 'https://rad-marigold-ff55c6.netlify.app';
   const teacherCode = `HOCA-${teacherId.slice(0, 6).toUpperCase()}`;
   const inviteUrl = `${origin}/join?teacherCode=${teacherCode}`;
 
@@ -159,6 +162,7 @@ export function AddStudentInviteModal({
                 <input
                   type="text"
                   readOnly
+                  aria-label="Özel davet bağlantısı"
                   value={inviteUrl}
                   className="flex-1 px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-stone-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-200 font-mono select-all focus:outline-none"
                 />
@@ -193,6 +197,7 @@ export function AddStudentInviteModal({
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input
                   type="text"
+                  aria-label="Öğrenci kullanıcı adı veya telefon numarası"
                   placeholder="@kullaniciadi veya +90 5..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}

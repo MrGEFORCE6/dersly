@@ -28,7 +28,8 @@ export function ThemeSelector() {
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`px-3 py-1.5 rounded-xl border transition-all flex items-center gap-2 text-xs font-medium cursor-pointer ${
+        aria-label="Tema ve Vurgu Rengi Ayarları"
+        className={`px-3 py-1.5 rounded-xl border transition-all flex items-center gap-2 text-xs font-medium cursor-pointer focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none ${
           resolvedMode === 'dark'
             ? 'bg-slate-900/90 border-slate-700/80 text-slate-200 hover:text-white hover:border-slate-600'
             : 'bg-white border-slate-200 text-slate-700 hover:text-slate-900 hover:border-slate-300 shadow-sm'

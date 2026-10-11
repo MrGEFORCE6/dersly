@@ -74,7 +74,7 @@ export function Navbar() {
           <div className="flex flex-col">
             <div className="flex items-center gap-1.5">
               <span className="font-extrabold text-lg tracking-tight text-slate-900 dark:text-slate-100">
-                DersPompa
+                Dersly
               </span>
               <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
                 PRO
@@ -239,7 +239,8 @@ export function Navbar() {
           <div className="relative">
             <button
               onClick={() => setPaletteMenuOpen(!paletteMenuOpen)}
-              className="p-2 rounded-xl bg-white dark:bg-slate-800 border border-stone-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors"
+              aria-label="Vurgu rengi paleti ayarları"
+              className="p-2 rounded-xl bg-white dark:bg-slate-800 border border-stone-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none"
               title="Vurgu Rengi"
             >
               <Palette className="w-4 h-4" />
@@ -270,7 +271,8 @@ export function Navbar() {
           {/* Theme Mode Toggle (Warm Paper Light vs Dark) */}
           <button
             onClick={() => setMode(resolvedMode === 'dark' ? 'light' : 'dark')}
-            className="p-2 rounded-xl bg-white dark:bg-slate-800 border border-stone-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors"
+            aria-label={resolvedMode === 'dark' ? 'Açık sıcak kağıt moduna geç' : 'Karanlık gece moduna geç'}
+            className="p-2 rounded-xl bg-white dark:bg-slate-800 border border-stone-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none"
             title={resolvedMode === 'dark' ? 'Sıcak Kağıt Moduna Geç (#FBFBF9)' : 'Karanlık Gece Moduna Geç (#0F172A)'}
           >
             {resolvedMode === 'dark' ? (
@@ -283,7 +285,8 @@ export function Navbar() {
           {/* User Profile Avatar Link */}
           <Link
             href="/profile"
-            className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-xl hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors"
+            aria-label={`Kullanıcı profili: ${userName}`}
+            className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-xl hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none"
           >
             <div className="w-8 h-8 rounded-full border-2 border-stone-300 dark:border-slate-700 overflow-hidden bg-white dark:bg-slate-800 shrink-0">
               <img
@@ -304,7 +307,8 @@ export function Navbar() {
           {/* Mobile Menu Button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 rounded-xl bg-white dark:bg-slate-800 border border-stone-200 dark:border-slate-700 text-slate-600 dark:text-slate-300"
+            aria-label="Navigasyon menüsünü aç veya kapat"
+            className="md:hidden p-2 rounded-xl bg-white dark:bg-slate-800 border border-stone-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none"
           >
             {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
           </button>

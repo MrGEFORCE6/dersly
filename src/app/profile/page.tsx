@@ -177,7 +177,7 @@ export default function ProfilePage() {
       </header>
 
       {/* Main Container */}
-      <main className="max-w-5xl mx-auto px-4 py-8 space-y-8">
+      <main id="main-content" className="max-w-5xl mx-auto px-4 py-8 space-y-8">
         {/* Instagram Profile Card Header */}
         <div className="rounded-3xl p-6 sm:p-8 glass-panel shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 right-0 w-80 h-80 rounded-full blur-3xl pointer-events-none opacity-20" style={{ background: 'var(--accent-primary)' }} />

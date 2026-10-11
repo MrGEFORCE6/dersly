@@ -130,7 +130,7 @@ function SinglePostBridgeContent({
         </div>
       )}
 
-      <main className="flex-1 max-w-3xl mx-auto px-4 py-8 w-full space-y-6">
+      <main id="main-content" className="flex-1 max-w-3xl mx-auto px-4 py-8 w-full space-y-6">
         {/* Navigation Breadcrumb */}
         <div className="flex items-center justify-between">
           <Link

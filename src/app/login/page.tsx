@@ -111,7 +111,7 @@ export default function LoginPage() {
             <GraduationCap className="w-5 h-5 text-white" />
           </div>
           <span className="font-extrabold text-lg tracking-tight bg-gradient-to-r from-slate-100 to-indigo-300 bg-clip-text text-transparent">
-            DersPompa
+            Dersly
           </span>
         </Link>
 
@@ -127,7 +127,7 @@ export default function LoginPage() {
       </header>
 
       {/* Login Card Center */}
-      <main className="flex-1 flex items-center justify-center p-4 sm:p-6 my-8">
+      <main id="main-content" className="flex-1 flex items-center justify-center p-4 sm:p-6 my-8">
         <div className="w-full max-w-md rounded-3xl p-6 sm:p-8 glass-panel shadow-2xl relative overflow-hidden space-y-6">
           <div className="text-center space-y-1.5">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold mb-2" style={{ backgroundColor: 'var(--accent-subtle)', color: 'var(--accent-text)' }}>
@@ -290,7 +290,7 @@ export default function LoginPage() {
 
       {/* Footer */}
       <footer className="py-4 text-center text-xs text-slate-500 border-t border-slate-800">
-        DersPompa © 2026 • Yeni Nesil Özel Ders Yönetim Platformu
+        Dersly © 2026 • Yeni Nesil Özel Ders Yönetim Platformu
       </footer>
     </div>
   );

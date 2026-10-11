@@ -196,7 +196,7 @@ export default function StudentLibraryPage() {
         </div>
       )}
 
-      <main className="flex-1 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full space-y-8">
+      <main id="main-content" className="flex-1 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full space-y-8">
         {/* Header Banner */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 p-6 sm:p-8 rounded-3xl glass-panel bg-white/80 dark:bg-slate-900/80 border border-stone-200 dark:border-slate-800 shadow-sm">
           <div className="space-y-2">

@@ -195,7 +195,7 @@ export default function SettingsPage() {
       </header>
 
       {/* Main Container */}
-      <main className="max-w-6xl mx-auto px-4 py-8 space-y-8">
+      <main id="main-content" className="max-w-6xl mx-auto px-4 py-8 space-y-8">
         {/* Section 1: KÖK DÜZEN & TEMA MOTORU */}
         <section className="rounded-3xl p-6 sm:p-8 glass-panel shadow-xl space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-700/40">

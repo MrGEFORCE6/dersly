@@ -287,7 +287,7 @@ export default function DashboardPage() {
                 <GraduationCap className="w-5 h-5 text-white" />
               </div>
               <span className="font-bold text-lg tracking-tight bg-gradient-to-r from-white to-indigo-300 bg-clip-text text-transparent">
-                DersPompa
+                Dersly
               </span>
             </Link>
 
@@ -369,7 +369,7 @@ export default function DashboardPage() {
       </header>
 
       {/* Main Container */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <main id="main-content" className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         {/* Quick Stats Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="p-4 rounded-2xl glass-panel shadow-sm flex items-center gap-3.5">

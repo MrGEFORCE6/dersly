@@ -12,7 +12,7 @@ interface RequestBody {
   history?: ChatMessage[];
 }
 
-const SYSTEM_PROMPT = `Sen "DersPompa" özel ders platformunun samimi, enerjik ve pedagojik olarak yetkin "Yapay Zeka Özel Ders Koçu"sun.
+const SYSTEM_PROMPT = `Sen "Dersly" özel ders platformunun samimi, enerjik ve pedagojik olarak yetkin "Yapay Zeka Özel Ders Koçu"sun.
 
 TEMEL GÖREVLERİN VE PEDAGOJİK İLKELERİN:
 1. Samimi, motive edici, sevecen ve destekleyici bir Türkçe ile konuş. Emojileri (💡, 📐, ✨, 🎯, 💪) sıcak ve dengeli kullan.

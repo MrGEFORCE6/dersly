@@ -80,7 +80,7 @@ function JoinContent() {
     <div className="min-h-screen bg-[#FBFBF9] dark:bg-[#0F172A] text-slate-800 dark:text-slate-100 flex flex-col transition-colors">
       <Navbar />
 
-      <main className="flex-1 max-w-xl mx-auto px-4 py-16 w-full flex flex-col justify-center">
+      <main id="main-content" className="flex-1 max-w-xl mx-auto px-4 py-16 w-full flex flex-col justify-center">
         <div className="p-8 sm:p-10 rounded-3xl glass-panel shadow-2xl border border-stone-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl relative overflow-hidden">
           {/* Subtle Ambient Glow */}
           <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
@@ -115,9 +115,9 @@ function JoinContent() {
                   />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-extrabold text-base text-slate-900 dark:text-white truncate">
+                  <span className="font-extrabold text-base text-slate-900 dark:text-white truncate block">
                     {teacher?.full_name}
-                  </h3>
+                  </span>
                   <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
                     {teacher?.bio || 'Özel Ders Eğitmeni'}
                   </p>

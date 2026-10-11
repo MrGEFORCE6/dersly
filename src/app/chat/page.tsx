@@ -213,7 +213,7 @@ export default function ChatPage() {
               <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center shadow-md">
                 <GraduationCap className="w-4 h-4 text-white" />
               </div>
-              <span className="font-extrabold text-base tracking-tight text-white">DersPompa</span>
+              <span className="font-extrabold text-base tracking-tight text-white">Dersly</span>
             </Link>
 
             <span className="text-slate-600 hidden sm:inline">/</span>
@@ -239,7 +239,7 @@ export default function ChatPage() {
       </header>
 
       {/* Main Chat Interface */}
-      <div className="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6 grid grid-cols-1 md:grid-cols-12 gap-4">
+      <main id="main-content" className="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6 grid grid-cols-1 md:grid-cols-12 gap-4">
         {/* Friends Sidebar (4 cols on md+) */}
         <div className="md:col-span-4 lg:col-span-4 rounded-3xl glass-panel border border-slate-800/80 flex flex-col h-[calc(100vh-7.5rem)] overflow-hidden shadow-xl">
           {/* Search Header */}
@@ -483,7 +483,7 @@ export default function ChatPage() {
             </form>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

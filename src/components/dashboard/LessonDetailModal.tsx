@@ -284,12 +284,12 @@ export function LessonDetailModal({
                   onClick={() => {
                     if (isRecording) {
                       setIsRecording(false);
-                      setAudioNoteUrl('https://derspompa.app/audio/ders_ozeti_sesli.mp3');
+                      setAudioNoteUrl('https://dersly.app/audio/ders_ozeti_sesli.mp3');
                     } else {
                       setIsRecording(true);
                       setTimeout(() => {
                         setIsRecording(false);
-                        setAudioNoteUrl('https://derspompa.app/audio/ders_ozeti_sesli.mp3');
+                        setAudioNoteUrl('https://dersly.app/audio/ders_ozeti_sesli.mp3');
                       }, 2500);
                     }
                   }}
@@ -311,6 +311,7 @@ export function LessonDetailModal({
                     onClick={() => setIsPlayingVoice(!isPlayingVoice)}
                     className="p-1.5 rounded-lg bg-stone-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-stone-200 transition-colors"
                     title="Kaydı Dinle"
+                    aria-label="Kaydı Dinle"
                   >
                     {isPlayingVoice ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
                   </button>
@@ -326,6 +327,7 @@ export function LessonDetailModal({
             <div className="flex items-center gap-2">
               <input
                 type="text"
+                aria-label="Ders tahtası PDF veya Görsel bağlantısı"
                 placeholder="Ders tahtası PDF/Görsel linki (örn: https://...)"
                 value={digitalNotesUrl}
                 onChange={(e) => setDigitalNotesUrl(e.target.value)}
@@ -333,9 +335,10 @@ export function LessonDetailModal({
               />
               <button
                 type="button"
-                onClick={() => setDigitalNotesUrl('https://derspompa.app/files/turev_tahta_ozeti_ders.pdf')}
+                onClick={() => setDigitalNotesUrl('https://dersly.app/files/turev_tahta_ozeti_ders.pdf')}
                 className="px-2.5 py-2 rounded-xl bg-white dark:bg-slate-800 border border-indigo-200 dark:border-slate-700 text-indigo-600 dark:text-indigo-400 text-xs font-semibold hover:bg-indigo-50 transition-colors"
                 title="Örnek Tahta PDF Ekle"
+                aria-label="Örnek Tahta PDF Ekle"
               >
                 <Paperclip className="w-3.5 h-3.5" />
               </button>

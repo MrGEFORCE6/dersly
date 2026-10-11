@@ -59,7 +59,7 @@ export default function ParentPortalPage() {
     <div className="min-h-screen bg-[#FBFBF9] dark:bg-[#0F172A] text-slate-800 dark:text-slate-100 flex flex-col transition-colors">
       <Navbar />
 
-      <main className="flex-1 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full space-y-8">
+      <main id="main-content" className="flex-1 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full space-y-8">
         {/* Parent Header Card */}
         <div className="p-6 sm:p-8 rounded-3xl glass-panel bg-white/80 dark:bg-slate-900/80 border border-stone-200 dark:border-slate-800 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="flex items-center gap-4">
@@ -223,9 +223,9 @@ export default function ParentPortalPage() {
                 <div className="flex items-center gap-3">
                   <span className="text-2xl">📄</span>
                   <div>
-                    <h4 className="font-bold text-xs text-slate-900 dark:text-white">
+                    <h3 className="font-bold text-xs text-slate-900 dark:text-white">
                       Türevin_Geometrik_Yorumu_Ders_Tahtasi.pdf
-                    </h4>
+                    </h3>
                     <span className="text-[10px] text-slate-400">4 Sayfa • 2.4 MB • 11 Ekim</span>
                   </div>
                 </div>
@@ -242,9 +242,9 @@ export default function ParentPortalPage() {
                 <div className="flex items-center gap-3">
                   <span className="text-2xl">📝</span>
                   <div>
-                    <h4 className="font-bold text-xs text-slate-900 dark:text-white">
+                    <h3 className="font-bold text-xs text-slate-900 dark:text-white">
                       Haftalik_Soru_Plani_ve_Odev_Foyu.pdf
-                    </h4>
+                    </h3>
                     <span className="text-[10px] text-slate-400">2 Sayfa • 1.1 MB • 10 Ekim</span>
                   </div>
                 </div>

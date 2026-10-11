@@ -3,11 +3,11 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useTheme } from '@/context/ThemeContext';
-import { 
-  fetchLessons, 
-  fetchHomeworks, 
-  fetchProfiles, 
-  uploadFileToStorage, 
+import {
+  fetchLessons,
+  fetchHomeworks,
+  fetchProfiles,
+  uploadFileToStorage,
   updateHomework,
   respondToReschedule,
   fetchBooks,
@@ -16,18 +16,18 @@ import {
 } from '@/lib/services/supabaseService';
 import type { Lesson, Homework, Profile, Book } from '@/types/database.types';
 import { ThemeSelector } from '@/components/theme/ThemeSelector';
-import { 
-  GraduationCap, 
-  Calendar, 
-  Clock, 
-  BookOpen, 
-  UploadCloud, 
-  CheckCircle2, 
-  FileText, 
-  ExternalLink, 
-  ArrowLeft, 
-  User, 
-  Settings, 
+import {
+  GraduationCap,
+  Calendar,
+  Clock,
+  BookOpen,
+  UploadCloud,
+  CheckCircle2,
+  FileText,
+  ExternalLink,
+  ArrowLeft,
+  User,
+  Settings,
   Sparkles,
   Bot,
   Send,
@@ -65,7 +65,7 @@ export default function StudentPortalPage() {
     created_at: '2026-10-11T00:00:00.000Z',
     updated_at: '2026-10-11T00:00:00.000Z',
   });
-  
+
   // Clean initial empty state
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [homeworks, setHomeworks] = useState<Homework[]>([]);
@@ -152,11 +152,11 @@ export default function StudentPortalPage() {
       prev.map((h) =>
         h.id === activeUploadHw.id
           ? {
-              ...h,
-              status: 'submitted' as const,
-              file_url: storageUrl,
-              submission_notes: uploadNote.trim(),
-            }
+            ...h,
+            status: 'submitted' as const,
+            file_url: storageUrl,
+            submission_notes: uploadNote.trim(),
+          }
           : h
       )
     );
@@ -296,7 +296,7 @@ export default function StudentPortalPage() {
       <Navbar />
 
       {/* Main Container */}
-      <main className="max-w-7xl mx-auto px-4 py-8 space-y-8">
+      <main id="main-content" className="max-w-7xl mx-auto px-4 py-8 space-y-8">
         {/* Pending Reschedule Notification Card */}
         {pendingReschedules.length > 0 && (
           <div className="space-y-3">
@@ -399,13 +399,12 @@ export default function StudentPortalPage() {
                     >
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-bold text-slate-900 dark:text-white block">{les.title}</span>
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase shrink-0 ${
-                          les.status === 'completed'
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase shrink-0 ${les.status === 'completed'
                             ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300'
                             : les.status === 'scheduled'
-                            ? 'bg-blue-500/15 text-blue-700 dark:text-blue-300'
-                            : 'bg-rose-500/15 text-rose-700 dark:text-rose-300'
-                        }`}>
+                              ? 'bg-blue-500/15 text-blue-700 dark:text-blue-300'
+                              : 'bg-rose-500/15 text-rose-700 dark:text-rose-300'
+                          }`}>
                           {les.status === 'completed' ? 'Tamamlandı' : les.status === 'scheduled' ? 'Planlandı' : 'İptal'}
                         </span>
                       </div>
@@ -582,13 +581,12 @@ export default function StudentPortalPage() {
                         className="p-4 rounded-2xl bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800/80 shadow-sm space-y-2.5"
                       >
                         <div className="flex items-center justify-between">
-                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                            isReviewed
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${isReviewed
                               ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300'
                               : isSubmitted
-                              ? 'bg-blue-500/15 text-blue-700 dark:text-blue-300'
-                              : 'bg-amber-500/15 text-amber-700 dark:text-amber-300'
-                          }`}>
+                                ? 'bg-blue-500/15 text-blue-700 dark:text-blue-300'
+                                : 'bg-amber-500/15 text-amber-700 dark:text-amber-300'
+                            }`}>
                             {isReviewed ? '✓ İncelendi' : isSubmitted ? 'Teslim Edildi' : 'Çözüm Bekliyor'}
                           </span>
 
@@ -647,13 +645,14 @@ export default function StudentPortalPage() {
             className="w-full max-w-md rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 space-y-4 shadow-2xl"
           >
             <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
-              <h4 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 <BookOpen className="w-4 h-4 text-amber-500" />
                 Kitaplığıma Yeni Kaynak Ekle
-              </h4>
+              </h3>
               <button
                 type="button"
                 onClick={() => setIsBookModalOpen(false)}
+                aria-label="Kapat"
                 className="text-slate-400 hover:text-slate-700 dark:hover:text-white"
               >
                 <X className="w-4 h-4" />
@@ -734,10 +733,11 @@ export default function StudentPortalPage() {
             className="w-full max-w-md rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 space-y-4 shadow-2xl"
           >
             <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
-              <h4 className="text-sm font-bold text-slate-900 dark:text-white">Ödev Çözümü Yükle</h4>
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">Ödev Çözümü Yükle</h3>
               <button
                 type="button"
                 onClick={() => setActiveUploadHw(null)}
+                aria-label="Kapat"
                 className="text-slate-400 hover:text-slate-700 dark:hover:text-white"
               >
                 <X className="w-4 h-4" />
@@ -836,11 +836,10 @@ export default function StudentPortalPage() {
                 className={`flex ${m.sender === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 <div
-                  className={`p-3 rounded-2xl max-w-[85%] text-xs leading-relaxed ${
-                    m.sender === 'user'
+                  className={`p-3 rounded-2xl max-w-[85%] text-xs leading-relaxed ${m.sender === 'user'
                       ? 'bg-indigo-600 text-white rounded-br-sm'
                       : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-bl-sm border border-slate-200 dark:border-slate-700/80 shadow-sm'
-                  }`}
+                    }`}
                 >
                   {m.text}
                 </div>

@@ -180,7 +180,7 @@ export default function DirectMessagesPage() {
     <div className="min-h-screen bg-[#FBFBF9] dark:bg-[#0F172A] text-slate-800 dark:text-slate-100 flex flex-col transition-colors">
       <Navbar />
 
-      <main className="flex-1 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex">
+      <main id="main-content" className="flex-1 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex">
         <div className="w-full h-[calc(100vh-140px)] rounded-3xl glass-panel bg-white/90 dark:bg-slate-900/90 border border-stone-200 dark:border-slate-800 shadow-2xl flex overflow-hidden">
           {/* Left Contacts Sidebar */}
           <aside className="w-80 sm:w-96 border-r border-stone-200 dark:border-slate-800 flex flex-col bg-stone-50/50 dark:bg-slate-950/40">
