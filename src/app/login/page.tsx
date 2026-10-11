@@ -22,7 +22,6 @@ import {
 
 export default function LoginPage() {
   const router = useRouter();
-  const supabase = createClient();
 
   const [roleTab, setRoleTab] = useState<'student_parent' | 'teacher'>('student_parent');
   const [emailOrPhone, setEmailOrPhone] = useState('');
@@ -52,6 +51,7 @@ export default function LoginPage() {
     setAuthSession(targetRole, targetId);
 
     try {
+      const supabase = createClient();
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
