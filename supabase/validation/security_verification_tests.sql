@@ -29,7 +29,9 @@ begin
     select id into test_hw_id from public.homeworks where student_id = test_student_id limit 1;
 
     if test_hw_id is not null then
-        -- JWT kimliği öğrenci olarak ayarlanır
+        -- JWT kimliği hem tekil hem çoğul konfigürasyon değişkenleriyle eksiksiz tanımlanır
+        perform set_config('request.jwt.claim.sub', test_student_id::text, true);
+        perform set_config('request.jwt.claim.role', 'authenticated', true);
         perform set_config('request.jwt.claims', json_build_object('sub', test_student_id::text, 'role', 'authenticated')::text, true);
 
         begin
@@ -55,23 +57,33 @@ end $$;
 -- ==============================================================================
 -- TEST 2: ÖĞRENCİLER ARASI VERİ İZOLASYONU (RLS ÇAPRAZ ERİŞİM TESTİ)
 -- ==============================================================================
--- Beklenen Sonuç: Öğrenci A, Öğrenci B'nin program etkinliklerini sorguladığında 0 satır dönmelidir.
+-- Beklenen Sonuç:
+-- 1. Pozitif Doğrulama: Öğrenci A kendi etkinliklerini görebilmelidir (count > 0).
+-- 2. Negatif İzolasyon: Öğrenci A, Öğrenci B'nin etkinliklerini sorguladığında 0 satır dönmelidir.
 
 do $$
 declare
     student_a uuid;
     student_b uuid;
+    own_count int;
     leaked_count int;
 begin
     select id into student_a from public.profiles where role = 'student' limit 1;
     select id into student_b from public.profiles where role = 'student' and id != student_a limit 1;
 
     if student_a is not null and student_b is not null then
-        -- Öğrenci A kimliğine geç
+        -- Öğrenci A kimliğine geç (hem singular hem jsonb claims)
+        perform set_config('request.jwt.claim.sub', student_a::text, true);
+        perform set_config('request.jwt.claim.role', 'authenticated', true);
         perform set_config('request.jwt.claims', json_build_object('sub', student_a::text, 'role', 'authenticated')::text, true);
         execute 'set local role authenticated';
 
-        -- Öğrenci B'nin etkinliklerini sorgula
+        -- 1. Pozitif Erişim Doğrulaması (auth.uid() gerçekten çalışıyor mu?)
+        select count(*) into own_count
+        from public.schedule_events
+        where user_id = student_a;
+
+        -- 2. Negatif İzolasyon Doğrulaması (Öğrenci B'nin verilerine sızıntı var mı?)
         select count(*) into leaked_count
         from public.schedule_events
         where user_id = student_b;
@@ -79,8 +91,12 @@ begin
         -- Rolü sıfırla
         execute 'reset role';
 
+        if own_count = 0 then
+            raise notice '⚠️ TEST 2 UYARI: Öğrenci A için kendi etkinliği bulunamadı (own_count=0). 0 sızıntı sonucu auth.uid() null olmasından kaynaklı yalancı pozitif (false positive) olabilir. Lütfen Öğrenci A için en az 1 etkinlik ekleyip testi tekrarlayın.';
+        end if;
+
         if leaked_count = 0 then
-            raise notice '✅ TEST 2 BAŞARILI: Öğrenci A, Öğrenci B''nin etkinliklerine erişemiyor (0 sızıntı).';
+            raise notice '✅ TEST 2 BAŞARILI: Öğrenci A, Öğrenci B''nin etkinliklerine erişemiyor (0 sızıntı, % kendi kaydı).', own_count;
         else
             raise exception '❌ TEST 2 BAŞARISIZ: RLS İhlali! % adet yabancı etkinlik görüntülendi.', leaked_count;
         end if;
@@ -106,6 +122,8 @@ begin
     select id into test_student_id from public.profiles where role = 'student' limit 1;
 
     if test_student_id is not null then
+        perform set_config('request.jwt.claim.sub', test_student_id::text, true);
+        perform set_config('request.jwt.claim.role', 'authenticated', true);
         perform set_config('request.jwt.claims', json_build_object('sub', test_student_id::text, 'role', 'authenticated')::text, true);
         execute 'set local role authenticated';
 
@@ -148,6 +166,8 @@ begin
     select id into test_student from public.profiles where role = 'student' limit 1;
 
     if teacher_a is not null and teacher_b is not null and class_of_b is not null and test_student is not null then
+        perform set_config('request.jwt.claim.sub', teacher_a::text, true);
+        perform set_config('request.jwt.claim.role', 'authenticated', true);
         perform set_config('request.jwt.claims', json_build_object('sub', teacher_a::text, 'role', 'authenticated')::text, true);
         execute 'set local role authenticated';
 

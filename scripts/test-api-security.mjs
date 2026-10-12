@@ -20,18 +20,31 @@ import { createClient } from '@supabase/supabase-js';
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
+const STUDENT_A_EMAIL = process.env.TEST_STUDENT_A_EMAIL || '';
+const STUDENT_A_PASS = process.env.TEST_STUDENT_A_PASSWORD || '';
+const TEACHER_A_EMAIL = process.env.TEST_TEACHER_A_EMAIL || '';
+const TEACHER_A_PASS = process.env.TEST_TEACHER_A_PASSWORD || '';
+
 const isLiveConfigured = SUPABASE_URL && !SUPABASE_URL.includes('placeholder') && SUPABASE_ANON_KEY;
+const hasAuthSessions = isLiveConfigured && STUDENT_A_EMAIL && STUDENT_A_PASS && TEACHER_A_EMAIL && TEACHER_A_PASS;
 
 console.log('═══════════════════════════════════════════════════════════════════');
 console.log('🛡️  DERSLY API GÜVENLİK VE RLS YETKİ TEST PAKETİ');
 console.log('═══════════════════════════════════════════════════════════════════\n');
 
 if (!isLiveConfigured) {
-  console.log('ℹ️  DURUM BİLDİRİMİ: Canlı Supabase bağlantısı tanımlı değil.');
-  console.log('    (NEXT_PUBLIC_SUPABASE_URL placeholder veya tanımsız)');
-  console.log('    Güvenlik kuralları yerel sözleşme ve kural simülasyonu olarak işletiliyor.\n');
+  console.log('ℹ️  MOD: ÇEVRİMDIŞI SÖZLEŞME VE MANTIK SİMÜLASYONU');
+  console.log('    (Canlı veritabanı / Supabase bağlantısı kapalıdır)');
+  console.log('    Sonuçlar yalnızca yerel mimari ve yetki iş kurallarını test eder.');
+  console.log('    Gerçek API veya canlı Supabase üzerinde RLS kanıtı DEĞİLDİR.\n');
+} else if (!hasAuthSessions) {
+  console.log(`🌐 Canlı Supabase Hedefi: ${SUPABASE_URL}`);
+  console.log('⚠️  DİKKAT: Test kullanıcı hesapları (Öğrenci A, Öğretmen A) tanımlanmadı.');
+  console.log('    Yalnızca anon (unauthenticated) rolü üzerinden test yapılabilir.');
+  console.log('    Roller arası gerçek RLS izolasyonu için ayrı test hesapları gerekir.\n');
 } else {
-  console.log(`🌐 Canlı Supabase Hedefi: ${SUPABASE_URL}\n`);
+  console.log(`🌐 Canlı Supabase Hedefi: ${SUPABASE_URL}`);
+  console.log('🔐 Gerçek JWT Oturum Modu: Öğrenci ve Öğretmen oturumları üzerinden test ediliyor.\n');
 }
 
 let passedCount = 0;

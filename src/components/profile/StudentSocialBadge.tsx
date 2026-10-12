@@ -38,7 +38,7 @@ export function StudentSocialBadge({ profile, viewerRole = 'teacher' }: StudentS
 
       {profile.bio && (
         <p className="text-[11px] text-slate-300 italic line-clamp-1">
-          "{profile.bio}"
+          &ldquo;{profile.bio}&rdquo;
         </p>
       )}
 

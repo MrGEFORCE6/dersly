@@ -139,16 +139,20 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 function ThemeInnerProvider({ children }: { children: React.ReactNode }) {
   const { theme, setTheme, resolvedTheme } = useNextTheme();
-  const [accent, setAccentState] = useState<AccentColor>('system');
+  const [accent, setAccentState] = useState<AccentColor>(() => {
+    if (typeof window !== 'undefined') {
+      return (
+        (localStorage.getItem('dersly_theme_accent') as AccentColor) ||
+        (localStorage.getItem('derspompa_theme_accent') as AccentColor) ||
+        'system'
+      );
+    }
+    return 'system';
+  });
 
   useEffect(() => {
-    const savedAccent =
-      (localStorage.getItem('dersly_theme_accent') as AccentColor) ||
-      (localStorage.getItem('derspompa_theme_accent') as AccentColor) ||
-      'system';
-    setAccentState(savedAccent);
-    document.documentElement.setAttribute('data-accent', savedAccent);
-  }, []);
+    document.documentElement.setAttribute('data-accent', accent);
+  }, [accent]);
 
   const handleSetMode = (newMode: ThemeMode) => {
     setTheme(newMode);
