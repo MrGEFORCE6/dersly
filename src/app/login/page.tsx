@@ -31,11 +31,9 @@ function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [showDevOptions, setShowDevOptions] = useState(false);
-  const [isLiveBackend, setIsLiveBackend] = useState(false);
+  const [isLiveBackend] = useState(() => isRealSupabaseConfigured());
 
   useEffect(() => {
-    setIsLiveBackend(isRealSupabaseConfigured());
-
     const errorParam = searchParams.get('error');
     if (errorParam) {
       if (errorParam === 'missing_oauth_code') {

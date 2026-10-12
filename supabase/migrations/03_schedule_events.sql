@@ -40,7 +40,8 @@ drop policy if exists "Kullanıcılar kendi program etkinliklerini yönetebilir"
 create policy "Kullanıcılar kendi program etkinliklerini yönetebilir"
     on public.schedule_events for all
     to authenticated
-    using (auth.uid() = user_id);
+    using (auth.uid() = user_id)
+    with check (auth.uid() = user_id);
 
 drop policy if exists "Öğretmenler bağlı öğrencilerinin programlarını görüntüleyebilir" on public.schedule_events;
 create policy "Öğretmenler bağlı öğrencilerinin programlarını görüntüleyebilir"

@@ -123,8 +123,10 @@ export function SmartSchedulePlanner({
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
 
   React.useEffect(() => {
+    // Next.js 16 prerender uyumu: new Date() yalnızca istemci tarafında okunur
     const today = new Date().getDay();
     const idx = (today + 6) % 7;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSelectedDay(idx);
     setTodayDayIndex(idx);
   }, []);

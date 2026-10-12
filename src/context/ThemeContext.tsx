@@ -140,10 +140,8 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 function ThemeInnerProvider({ children }: { children: React.ReactNode }) {
   const { theme, setTheme, resolvedTheme } = useNextTheme();
   const [accent, setAccentState] = useState<AccentColor>('system');
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
     const savedAccent =
       (localStorage.getItem('dersly_theme_accent') as AccentColor) ||
       (localStorage.getItem('derspompa_theme_accent') as AccentColor) ||

@@ -53,12 +53,13 @@ export function ClassManagement({ teacherId = 't-001', onSelectClassForTask }: C
   const [formError, setFormError] = useState<string | null>(null);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadClasses();
-    loadAllStudents();
-  }, [teacherId]);
+  const handleSelectClass = async (cls: Class) => {
+    setSelectedClass(cls);
+    const students = await fetchClassStudents(cls.id);
+    setClassStudents(students);
+  };
 
-  async function loadClasses() {
+  const loadClasses = async () => {
     setLoading(true);
     try {
       const data = await fetchClasses(teacherId);
@@ -69,18 +70,17 @@ export function ClassManagement({ teacherId = 't-001', onSelectClassForTask }: C
     } finally {
       setLoading(false);
     }
-  }
+  };
 
-  async function loadAllStudents() {
+  const loadAllStudents = async () => {
     const profiles = await fetchProfiles();
     setAllStudents(profiles.filter((p) => p.role === 'student'));
-  }
+  };
 
-  async function handleSelectClass(cls: Class) {
-    setSelectedClass(cls);
-    const students = await fetchClassStudents(cls.id);
-    setClassStudents(students);
-  }
+  useEffect(() => {
+    loadClasses();
+    loadAllStudents();
+  }, [teacherId]);
 
   async function handleCreateClass(e: React.FormEvent) {
     e.preventDefault();

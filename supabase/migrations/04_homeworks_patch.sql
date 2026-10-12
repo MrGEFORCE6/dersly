@@ -36,13 +36,25 @@ create index if not exists idx_homeworks_teacher_id on public.homeworks(teacher_
 create index if not exists idx_homeworks_class_id on public.homeworks(class_id);
 create index if not exists idx_homeworks_status on public.homeworks(status);
 
+-- 4. Mevcut Verilerin Geriye Dönük Uyumluluğu (Safe Non-Destructive Backfill)
+-- Geçmiş ödevlerde teacher_id boşsa ve lesson_id tanımlıysa, ilgili dersin öğretmenini güvenle aktar
+update public.homeworks h
+set teacher_id = l.teacher_id
+from public.lessons l
+where h.lesson_id = l.id and h.teacher_id is null;
+
+-- Geçmiş ödevlerde estimated_minutes null kaldıysa varsayılan 45 değerini tanımla
+update public.homeworks
+set estimated_minutes = 45
+where estimated_minutes is null;
+
 drop trigger if exists set_homeworks_updated_at on public.homeworks;
 create trigger set_homeworks_updated_at
     before update on public.homeworks
     for each row
     execute function update_updated_at_column();
 
--- 4. RLS Güvenlik Politikaları Güncellemesi
+-- 5. RLS Güvenlik Politikaları Güncellemesi
 alter table public.homeworks enable row level security;
 
 -- SELECT Politikası (Öğrenci veya İlgili Öğretmen)
