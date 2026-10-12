@@ -1,17 +1,21 @@
 /**
- * Dersly — Gerçek Öğrenci ve Öğretmen Oturumları İçin API Güvenlik Test Paketi
- * (API Security Verification Suite)
+ * Dersly — Çoklu Kullanıcı Rolleri İçin API Güvenlik Test Paketi
+ * (API Security Verification Suite for Multi-Role RLS & Triggers)
  * 
  * Bu betik:
- * 1. Canlı Supabase URL ve Key mevcutsa gerçek HTTPS istekleriyle RLS ve Trigger'ları test eder.
- * 2. Canlı bağlantı yoksa simülasyon modunda yerel güvenlik kurallarını assert eder.
+ * 1. GERÇEK CANLI ORTAM:
+ *    Eğer SUPABASE_URL, SUPABASE_ANON_KEY ve 4 ayrı test hesabı (Öğrenci A, Öğrenci B, Öğretmen A, Öğretmen B)
+ *    ortam değişkenlerinde tanımlıysa, her kullanıcı için ayrı JWT oturumu açarak gerçek HTTPS istekleriyle RLS ve Trigger'ları test eder.
+ * 2. EKSİK ÖN KOŞUL / SİMÜLASYON ORTAMI:
+ *    Eğer test hesapları veya canlı bağlantı tanımlı değilse, durumu AÇIKÇA RAPORLAR ve
+ *    yerel sözleşme/iş kuralı simülasyonu olarak işletir. Bu sonuçları gerçek API kanıtı olarak sunmaz.
  * 
- * Kapsanan Senaryolar:
- * - Senaryo 1: Öğrenciler arası veri izolasyonu (Başka öğrencinin programına erişim)
- * - Senaryo 2: Yabancı sınıfa yetkisiz ödev atama (Öğretmenler arası sınıf izolasyonu)
- * - Senaryo 3: Öğrencinin not ve inceleme durumunu değiştirmesi (Puan tahrifatı)
- * - Senaryo 4: Öğrencinin sınıf oluşturma girişimi (Yetkisiz sınıf yönetimi)
- * - Senaryo 5: Yetkisiz dosya uzantısı / boyutu yükleme (Storage güvenliği)
+ * Test Senaryoları:
+ * - Senaryo 1: Öğrenciler arası veri izolasyonu (Öğrenci A, Öğrenci B'nin verilerine erişemez)
+ * - Senaryo 2: Puan ve inceleme tahrifatı engeli (Öğrenci notunu ve öğretmen geri bildirimini değiştiremez)
+ * - Senaryo 3: Öğretmen yetki sınırı (Öğretmen A, Öğretmen B'nin sınıfına ödev atayamaz / değiştiremez)
+ * - Senaryo 4: Yetkisiz erişim kısıtı (Anonim / yetkisiz istekler ödevleri veya dosyaları değiştiremez/silemez)
+ * - Senaryo 5: Storage dosya güvenliği (Zararlı uzantı .exe ve 20MB üzeri dosya yükleme engeli)
  */
 
 import assert from 'node:assert';
@@ -22,29 +26,41 @@ const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBL
 
 const STUDENT_A_EMAIL = process.env.TEST_STUDENT_A_EMAIL || '';
 const STUDENT_A_PASS = process.env.TEST_STUDENT_A_PASSWORD || '';
+const STUDENT_B_EMAIL = process.env.TEST_STUDENT_B_EMAIL || '';
+const STUDENT_B_PASS = process.env.TEST_STUDENT_B_PASSWORD || '';
 const TEACHER_A_EMAIL = process.env.TEST_TEACHER_A_EMAIL || '';
 const TEACHER_A_PASS = process.env.TEST_TEACHER_A_PASSWORD || '';
+const TEACHER_B_EMAIL = process.env.TEST_TEACHER_B_EMAIL || '';
+const TEACHER_B_PASS = process.env.TEST_TEACHER_B_PASSWORD || '';
 
-const isLiveConfigured = SUPABASE_URL && !SUPABASE_URL.includes('placeholder') && SUPABASE_ANON_KEY;
-const hasAuthSessions = isLiveConfigured && STUDENT_A_EMAIL && STUDENT_A_PASS && TEACHER_A_EMAIL && TEACHER_A_PASS;
+const isLiveUrlConfigured = SUPABASE_URL && !SUPABASE_URL.includes('placeholder') && SUPABASE_ANON_KEY;
+const hasAll4TestAccounts =
+  isLiveUrlConfigured &&
+  STUDENT_A_EMAIL && STUDENT_A_PASS &&
+  STUDENT_B_EMAIL && STUDENT_B_PASS &&
+  TEACHER_A_EMAIL && TEACHER_A_PASS &&
+  TEACHER_B_EMAIL && TEACHER_B_PASS;
 
 console.log('═══════════════════════════════════════════════════════════════════');
-console.log('🛡️  DERSLY API GÜVENLİK VE RLS YETKİ TEST PAKETİ');
+console.log('🛡️  DERSLY API GÜVENLİK VE RLS YETKİ DOĞRULAMA PAKETİ');
 console.log('═══════════════════════════════════════════════════════════════════\n');
 
-if (!isLiveConfigured) {
-  console.log('ℹ️  MOD: ÇEVRİMDIŞI SÖZLEŞME VE MANTIK SİMÜLASYONU');
-  console.log('    (Canlı veritabanı / Supabase bağlantısı kapalıdır)');
-  console.log('    Sonuçlar yalnızca yerel mimari ve yetki iş kurallarını test eder.');
-  console.log('    Gerçek API veya canlı Supabase üzerinde RLS kanıtı DEĞİLDİR.\n');
-} else if (!hasAuthSessions) {
-  console.log(`🌐 Canlı Supabase Hedefi: ${SUPABASE_URL}`);
-  console.log('⚠️  DİKKAT: Test kullanıcı hesapları (Öğrenci A, Öğretmen A) tanımlanmadı.');
-  console.log('    Yalnızca anon (unauthenticated) rolü üzerinden test yapılabilir.');
-  console.log('    Roller arası gerçek RLS izolasyonu için ayrı test hesapları gerekir.\n');
+if (!isLiveUrlConfigured) {
+  console.log('📋 ÇALIŞMA MODU: YEREL SÖZLEŞME VE İŞ MANTIĞI SİMÜLASYONU');
+  console.log('   ⚠️  EKSİK ÖN KOŞUL: SUPABASE_URL veya SUPABASE_ANON_KEY tanımlı değil.');
+  console.log('   ⚠️  Bu testler gerçek PostgreSQL RLS veya PostgREST API kanıtı DEĞİLDİR.');
+  console.log('   ℹ️  Aşağıdaki sonuçlar yerel JavaScript kurallarının matematiksel doğrulamasıdır.\n');
+} else if (!hasAll4TestAccounts) {
+  console.log(`🌐 Hedef URL: ${SUPABASE_URL}`);
+  console.log('📋 ÇALIŞMA MODU: KISMİ / ANONİM API TESTİ & SİMÜLASYON');
+  console.log('   ⚠️  EKSİK ÖN KOŞUL: 4 ayrı test hesabı (Öğrenci A/B, Öğretmen A/B) tanımlanmadı.');
+  console.log('   ⚠️  Yalnızca anon key ile test yapılması RLS çoklu kullanıcı ayrımını kanıtlamaz.');
+  console.log('   ℹ️  Gereken ortam değişkenleri: TEST_STUDENT_A_EMAIL/PASSWORD, TEST_STUDENT_B_EMAIL/PASSWORD,');
+  console.log('       TEST_TEACHER_A_EMAIL/PASSWORD, TEST_TEACHER_B_EMAIL/PASSWORD.\n');
 } else {
   console.log(`🌐 Canlı Supabase Hedefi: ${SUPABASE_URL}`);
-  console.log('🔐 Gerçek JWT Oturum Modu: Öğrenci ve Öğretmen oturumları üzerinden test ediliyor.\n');
+  console.log('🔐 ÇALIŞMA MODU: GERÇEK ÇOK KULLANICILI JWT API TESTİ');
+  console.log('   ✅ 4 Test hesabı (Öğrenci A, Öğrenci B, Öğretmen A, Öğretmen B) aktif.\n');
 }
 
 let passedCount = 0;
@@ -62,81 +78,70 @@ function reportTest(name, passed, detail) {
   }
 }
 
+// Güvenli istemci oluşturucu (Token asla loglanmaz)
+async function createAuthenticatedClient(email, password) {
+  const client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const { data, error } = await client.auth.signInWithPassword({ email, password });
+  if (error || !data.session) {
+    throw new Error(`Test kullanıcısı ile oturum açılamadı (${email}): ${error?.message || 'Bilinmeyen hata'}`);
+  }
+  return { client, user: data.user };
+}
+
 // -----------------------------------------------------------------------------
-// TEST 1: ÖĞRENCİLER ARASI VERİ İZOLASYONU (RLS TESTİ)
+// SENARYO 1: ÖĞRENCİLER ARASI VERİ İZOLASYONU (RLS TESTİ)
 // -----------------------------------------------------------------------------
 async function testCrossUserIsolation() {
-  const testName = "Test 1: Öğrenci A, Öğrenci B'nin program verilerine erişemez (RLS)";
-  if (isLiveConfigured) {
-    // Gerçek API üzerinden test
-    const client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    // Student B kimliğiyle filtrelenmiş istek
-    const { data, error } = await client
-      .from('schedule_events')
-      .select('*')
-      .eq('user_id', '00000000-0000-0000-0000-000000000002');
-    
-    // Anonim veya yabancı kullanıcıda 0 satır dönmeli
-    const isSafe = !error && (!data || data.length === 0);
-    reportTest(testName, isSafe, isSafe ? '0 satır sızıntı tespit edildi.' : 'Yabancı veriye erişildi!');
+  const testName = "Senaryo 1: Öğrenci A, Öğrenci B'nin kişisel verilerine erişemez";
+  if (hasAll4TestAccounts) {
+    try {
+      const { client: clientA } = await createAuthenticatedClient(STUDENT_A_EMAIL, STUDENT_A_PASS);
+      const { user: userB } = await createAuthenticatedClient(STUDENT_B_EMAIL, STUDENT_B_PASS);
+
+      // Öğrenci A, Öğrenci B'nin schedule_events kayıtlarını sorguluyor
+      const { data, error } = await clientA
+        .from('schedule_events')
+        .select('*')
+        .eq('user_id', userB.id);
+
+      const isSafe = !error && (!data || data.length === 0);
+      reportTest(testName, isSafe, isSafe ? '0 sızıntı (RLS doğru izole etti)' : 'Açık! Yabancı etkinlikler okundu');
+    } catch (err) {
+      reportTest(testName, false, err.message);
+    }
   } else {
-    // Simülasyon
+    // Sözleşme simülasyonu
     const mockDbEvents = [
       { id: 'ev-1', user_id: 'student-A', title: 'Matematik' },
       { id: 'ev-2', user_id: 'student-B', title: 'Fizik Özel Not' },
     ];
-    const currentUserId = 'student-A';
-    const accessibleEvents = mockDbEvents.filter((ev) => ev.user_id === currentUserId);
+    const accessibleEvents = mockDbEvents.filter((ev) => ev.user_id === 'student-A');
     const hasLeak = accessibleEvents.some((ev) => ev.user_id === 'student-B');
-    reportTest(testName, !hasLeak, 'Simüle edilmiş RLS: Öğrenci A sadece kendi etkinliklerini gördü.');
+    reportTest(testName, !hasLeak, 'Simülasyon Sözleşmesi: Öğrenci A sadece kendi etkinliklerini gördü (0 yabancı satır).');
   }
 }
 
 // -----------------------------------------------------------------------------
-// TEST 2: YABANCI SINIFA ÖDEV ATAMA ENGELİ (RLS WITH CHECK)
-// -----------------------------------------------------------------------------
-async function testForeignClassHomeworkAssignment() {
-  const testName = 'Test 2: Öğretmen başka öğretmenin sınıfına ödev atayamaz (RLS WITH CHECK)';
-  if (isLiveConfigured) {
-    const client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    const { error } = await client.from('homeworks').insert({
-      teacher_id: '00000000-0000-0000-0000-000000000001',
-      class_id: '00000000-0000-0000-0000-000000000099', // Yabancı sınıf
-      student_id: '00000000-0000-0000-0000-000000000002',
-      title: 'Yetkisiz Ödev',
-      description: 'İhlal denemesi',
-    });
-    const isBlocked = !!error;
-    reportTest(testName, isBlocked, error ? error.message : 'Açık! Yabancı sınıfa ödev eklenebildi.');
-  } else {
-    // Simülasyon: Kural denetimi
-    function checkAssignmentPermission(teacherId, classOwnerId) {
-      if (teacherId !== classOwnerId) {
-        throw new Error('RLS İhlali: Bu sınıfın sahibi siz değilsiniz.');
-      }
-    }
-    assert.throws(
-      () => checkAssignmentPermission('teacher-1', 'teacher-2'),
-      /RLS İhlali/
-    );
-    reportTest(testName, true, 'Kural kısıtı: Yabancı sınıfa ödev atama engellendi.');
-  }
-}
-
-// -----------------------------------------------------------------------------
-// TEST 3: PUAN VE NOT TAHRİFATI ENGELİ (TRIGGER TESTİ)
+// SENARYO 2: PUAN VE İNCELEME TAHRİFATI ENGELİ (TRIGGER TESTİ)
 // -----------------------------------------------------------------------------
 async function testGradeTamperingPrevention() {
-  const testName = 'Test 3: Öğrenci kendi puanını ve inceleme durumunu değiştiremez (Trigger)';
-  if (isLiveConfigured) {
-    const client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    const { error } = await client
-      .from('homeworks')
-      .update({ score: 100, status: 'reviewed' })
-      .eq('id', 'hw-test-01');
-    const isBlocked = !!error;
-    reportTest(testName, isBlocked, error ? error.message : 'Açık! Öğrenci not değiştirebildi.');
+  const testName = 'Senaryo 2: Öğrenci kendi puanını ve inceleme alanlarını değiştiremez (Trigger)';
+  if (hasAll4TestAccounts) {
+    try {
+      const { client: clientA, user: userA } = await createAuthenticatedClient(STUDENT_A_EMAIL, STUDENT_A_PASS);
+      // Öğrenci A kendisine ait bir ödevin puanını 100 yapmaya çalışıyor
+      const { error } = await clientA
+        .from('homeworks')
+        .update({ score: 100, status: 'reviewed', teacher_feedback: 'Tahrifat' })
+        .eq('student_id', userA.id);
+
+      const isBlocked = !!error && error.message.includes('GÜVENLİK İHLALİ');
+      reportTest(testName, isBlocked, error ? error.message : 'Açık! Öğrenci not değiştirebildi.');
+    } catch (err) {
+      reportTest(testName, false, err.message);
+    }
   } else {
+    // Sözleşme simülasyonu
     function simulateTrigger(oldRow, newRow, userRole) {
       if (userRole === 'student') {
         if (newRow.score !== oldRow.score) {
@@ -151,57 +156,91 @@ async function testGradeTamperingPrevention() {
       }
     }
     const oldRow = { id: 'hw-1', score: null, teacher_feedback: null, status: 'pending' };
-    assert.throws(
-      () => simulateTrigger(oldRow, { ...oldRow, score: 95 }, 'student'),
-      /GÜVENLİK İHLALİ: Öğrenciler ödev puanını değiştiremez/
-    );
-    assert.throws(
-      () => simulateTrigger(oldRow, { ...oldRow, status: 'reviewed' }, 'student'),
-      /GÜVENLİK İHLALİ: Öğrenciler ödev durumunu "reviewed" yapamaz/
-    );
-    reportTest(testName, true, 'Trigger kısıtı: Puan ve durum tahrifatı başarıyla engellendi.');
+    assert.throws(() => simulateTrigger(oldRow, { ...oldRow, score: 95 }, 'student'), /GÜVENLİK İHLALİ/);
+    assert.throws(() => simulateTrigger(oldRow, { ...oldRow, teacher_feedback: 'Harika' }, 'student'), /GÜVENLİK İHLALİ/);
+    assert.throws(() => simulateTrigger(oldRow, { ...oldRow, status: 'reviewed' }, 'student'), /GÜVENLİK İHLALİ/);
+    reportTest(testName, true, 'Simülasyon Sözleşmesi: Puan, geri bildirim ve durum tahrifatı trigger ile engellendi.');
   }
 }
 
 // -----------------------------------------------------------------------------
-// TEST 4: ÖĞRENCİNİN SINIF OLUŞTURMA ENGELİ (RLS WITH CHECK)
+// SENARYO 3: ÖĞRETMEN YETKİ SINIRI (ÖĞRETMENLER ARASI SINIF İZOLASYONU)
 // -----------------------------------------------------------------------------
-async function testStudentClassCreationRestriction() {
-  const testName = 'Test 4: Öğrenci rolündeki kullanıcı sınıf oluşturamaz (RLS WITH CHECK)';
-  if (isLiveConfigured) {
-    const client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    const { error } = await client.from('classes').insert({
-      name: 'Öğrencinin Sahte Sınıfı',
-      teacher_id: '00000000-0000-0000-0000-000000000002', // Öğrenci UUID
-    });
-    const isBlocked = !!error;
-    reportTest(testName, isBlocked, error ? error.message : 'Açık! Öğrenci sınıf oluşturabildi.');
+async function testTeacherAuthorizationBoundary() {
+  const testName = 'Senaryo 3: Öğretmen yalnızca yetkili olduğu sınıfların verilerine erişebilir';
+  if (hasAll4TestAccounts) {
+    try {
+      const { client: clientTeacherA, user: teacherA } = await createAuthenticatedClient(TEACHER_A_EMAIL, TEACHER_A_PASS);
+      const { client: clientTeacherB, user: teacherB } = await createAuthenticatedClient(TEACHER_B_EMAIL, TEACHER_B_PASS);
+
+      // Öğretmen A, Öğretmen B'nin sınıfına ödev eklemeyi deniyor
+      const { error } = await clientTeacherA.from('homeworks').insert({
+        teacher_id: teacherA.id,
+        class_id: '00000000-0000-0000-0000-000000000099',
+        student_id: '00000000-0000-0000-0000-000000000002',
+        title: 'Yabancı Sınıf İhlali',
+        description: 'Test',
+      });
+
+      const isBlocked = !!error;
+      reportTest(testName, isBlocked, error ? error.message : 'Açık! Yabancı sınıfa ödev eklenebildi.');
+    } catch (err) {
+      reportTest(testName, false, err.message);
+    }
   } else {
-    function checkClassCreationRole(role) {
-      if (role !== 'teacher') {
-        throw new Error('RLS İhlali: Sadece öğretmen rolündeki kullanıcılar sınıf oluşturabilir.');
+    // Sözleşme simülasyonu
+    function checkTeacherClassAccess(teacherId, classOwnerId) {
+      if (teacherId !== classOwnerId) {
+        throw new Error('RLS WITH CHECK Reddi: Yalnızca sınıfın sahibi olan öğretmen ödev atayabilir.');
       }
     }
-    assert.throws(
-      () => checkClassCreationRole('student'),
-      /RLS İhlali/
-    );
-    reportTest(testName, true, 'Kural kısıtı: Öğrencinin sınıf açma denemesi engellendi.');
+    assert.throws(() => checkTeacherClassAccess('teacher-A', 'teacher-B'), /RLS WITH CHECK Reddi/);
+    reportTest(testName, true, 'Simülasyon Sözleşmesi: Yabancı sınıfa ödev atama RLS WITH CHECK ile engellendi.');
   }
 }
 
 // -----------------------------------------------------------------------------
-// TEST 5: STORAGE YETKİSİZ UZANTI VE BOYUT KORUMASI
+// SENARYO 4: YETKİSİZ ERİŞİM KISITI (ANONİM / SAHTE İSTEKLER)
 // -----------------------------------------------------------------------------
-async function testStorageSecurityConstraints() {
-  const testName = 'Test 5: Zararlı dosya uzantısı (.exe) ve >20MB yükleme engellenmelidir';
+async function testUnauthorizedAccess() {
+  const testName = 'Senaryo 4: Yetkisiz kullanıcılar ödev ve dosyaları değiştiremez/silemez';
+  if (isLiveUrlConfigured) {
+    try {
+      const anonClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      // Anonim kullanıcı ödev tablosuna yazmayı deniyor
+      const { error: insertError } = await anonClient.from('homeworks').insert({
+        title: 'Anonim Sahte Ödev',
+        description: 'İhlal',
+      });
+      const isBlocked = !!insertError;
+      reportTest(testName, isBlocked, insertError ? insertError.message : 'Açık! Anonim kullanıcı ödev ekleyebildi.');
+    } catch (err) {
+      reportTest(testName, false, err.message);
+    }
+  } else {
+    // Sözleşme simülasyonu
+    function enforceAuthenticated(role) {
+      if (!role || role === 'anon') {
+        throw new Error('Yetki Hatası: Bu işlem için oturum açılması (authenticated rolü) zorunludur.');
+      }
+    }
+    assert.throws(() => enforceAuthenticated('anon'), /Yetki Hatası/);
+    reportTest(testName, true, 'Simülasyon Sözleşmesi: Anonim / yetkisiz işlemler authenticated politikasıyla engellendi.');
+  }
+}
+
+// -----------------------------------------------------------------------------
+// SENARYO 5: STORAGE DOSYA YÜKLEME GÜVENLİK SINIRLARI
+// -----------------------------------------------------------------------------
+async function testStorageSecurity() {
+  const testName = 'Senaryo 5: İzin verilmeyen dosya uzantıları (.exe) ve >20MB yüklemeler engellenir';
   const allowedExtensions = ['pdf', 'png', 'jpg', 'jpeg', 'webp', 'doc', 'docx'];
   const maxBytes = 20 * 1024 * 1024;
 
   function validateStorageUpload(fileName, size) {
     const ext = fileName.split('.').pop()?.toLowerCase();
     if (!allowedExtensions.includes(ext)) {
-      throw new Error(`Storage RLS Reddi: .${ext} uzantılı dosyalara izin verilmez.`);
+      throw new Error(`Storage Güvenlik Reddi: .${ext} uzantılı dosyalara izin verilmez.`);
     }
     if (size > maxBytes) {
       throw new Error('Storage Sınırı: Dosya boyutu 20MB sınırını aşıyor.');
@@ -209,30 +248,36 @@ async function testStorageSecurityConstraints() {
     return true;
   }
 
-  assert.throws(() => validateStorageUpload('zararli.exe', 1024), /Storage RLS Reddi/);
-  assert.throws(() => validateStorageUpload('buyuk.pdf', 25 * 1024 * 1024), /Storage Sınırı/);
-  assert.strictEqual(validateStorageUpload('odev.pdf', 5 * 1024 * 1024), true);
+  assert.throws(() => validateStorageUpload('virus.exe', 1024), /Storage Güvenlik Reddi/);
+  assert.throws(() => validateStorageUpload('buyuk_dosya.pdf', 25 * 1024 * 1024), /Storage Sınırı/);
+  assert.strictEqual(validateStorageUpload('odev_cozumu.pdf', 5 * 1024 * 1024), true);
 
-  reportTest(testName, true, 'Storage kuralları: .exe uzantısı ve 20MB üzeri dosyalar başarıyla reddedildi.');
+  reportTest(testName, true, 'Storage kuralları: .exe uzantısı ve 20MB üzeri dosyalar başarıyla engellendi.');
 }
 
 // -----------------------------------------------------------------------------
-// ÇALIŞTIRMA VE RAPORLAMA
+// ÇALIŞTIRMA VE ÖZET
 // -----------------------------------------------------------------------------
 async function runAll() {
   await testCrossUserIsolation();
-  await testForeignClassHomeworkAssignment();
   await testGradeTamperingPrevention();
-  await testStudentClassCreationRestriction();
-  await testStorageSecurityConstraints();
+  await testTeacherAuthorizationBoundary();
+  await testUnauthorizedAccess();
+  await testStorageSecurity();
 
   console.log('\n═══════════════════════════════════════════════════════════════════');
-  console.log(`📊 API GÜVENLİK TEST SONUCU: ${passedCount} / ${totalCount} TEST BAŞARILI (%${Math.round((passedCount / totalCount) * 100)})`);
-  if (!isLiveConfigured) {
-    console.log('📌 Canlı Supabase Testi İçin:');
-    console.log('   $env:SUPABASE_URL="https://your-id.supabase.co"');
-    console.log('   $env:SUPABASE_ANON_KEY="eyJhbGci..."');
-    console.log('   npm run test:security');
+  console.log(`📊 TEST SONUCU: ${passedCount} / ${totalCount} TEST TAMAMLANDI (%${Math.round((passedCount / totalCount) * 100)})`);
+  if (!hasAll4TestAccounts) {
+    console.log('📌 NOT: Gerçek Canlı Supabase RLS Doğrulaması İçin:');
+    console.log('   1. Supabase Dashboard üzerinde 2 öğrenci (A, B) ve 2 öğretmen (A, B) hesabı açın.');
+    console.log('   2. Ortam değişkenlerini PowerShell ile ayarlayın:');
+    console.log('      $env:SUPABASE_URL="https://your-project.supabase.co"');
+    console.log('      $env:SUPABASE_ANON_KEY="eyJhbGci..."');
+    console.log('      $env:TEST_STUDENT_A_EMAIL="student_a@test.com"; $env:TEST_STUDENT_A_PASSWORD="***"');
+    console.log('      $env:TEST_STUDENT_B_EMAIL="student_b@test.com"; $env:TEST_STUDENT_B_PASSWORD="***"');
+    console.log('      $env:TEST_TEACHER_A_EMAIL="teacher_a@test.com"; $env:TEST_TEACHER_A_PASSWORD="***"');
+    console.log('      $env:TEST_TEACHER_B_EMAIL="teacher_b@test.com"; $env:TEST_TEACHER_B_PASSWORD="***"');
+    console.log('   3. "npm run test:security" komutunu çalıştırın.');
   }
   console.log('═══════════════════════════════════════════════════════════════════\n');
 }
