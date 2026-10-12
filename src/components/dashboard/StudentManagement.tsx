@@ -18,8 +18,11 @@ import {
   CheckCircle2, 
   Calendar,
   Sparkles,
-  Edit3
+  Edit3,
+  FileSpreadsheet,
+  Download,
 } from 'lucide-react';
+import { exportStudentsToXLSX, exportStudentsToCSV } from '@/lib/services/exportImportService';
 
 interface StudentManagementProps {
   students: StudentWithStats[];
@@ -90,10 +93,26 @@ export function StudentManagement({
           />
         </div>
 
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-400 font-mono">
+        <div className="flex items-center gap-2.5">
+          <span className="text-xs text-slate-400 font-mono hidden sm:inline">
             Toplam: <strong>{students.length}</strong> Aktif Öğrenci
           </span>
+          <button
+            onClick={() => exportStudentsToXLSX(students)}
+            className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-bold text-slate-200 hover:text-emerald-400 flex items-center gap-1.5 transition"
+            title="Öğrenci Listesini Excel Olarak İndir"
+          >
+            <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Excel (.xlsx)</span>
+          </button>
+          <button
+            onClick={() => exportStudentsToCSV(students)}
+            className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-bold text-slate-200 hover:text-indigo-400 flex items-center gap-1.5 transition"
+            title="Öğrenci Listesini CSV Olarak İndir"
+          >
+            <Download className="w-3.5 h-3.5 text-indigo-400" />
+            <span>CSV (.csv)</span>
+          </button>
         </div>
       </div>
 

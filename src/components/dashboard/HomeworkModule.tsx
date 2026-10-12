@@ -32,8 +32,10 @@ import {
   X,
   Link as LinkIcon,
   MessageSquare,
-  Sparkles
+  Sparkles,
+  FileSpreadsheet,
 } from 'lucide-react';
+import { exportHomeworksToXLSX } from '@/lib/services/exportImportService';
 
 export interface HomeworkWithMeta extends Homework {
   studentName?: string;
@@ -539,6 +541,15 @@ export function HomeworkModule({
                 {f.label}
               </button>
             ))}
+
+            <button
+              onClick={() => exportHomeworksToXLSX(filteredHomeworks)}
+              className="px-3 py-1.5 rounded-xl text-xs font-bold bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:text-emerald-600 flex items-center gap-1.5 shadow-sm transition ml-auto sm:ml-2"
+              title="Ödev Değerlendirme Raporunu Excel Olarak İndir"
+            >
+              <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-500" />
+              <span>Excel'e Aktar</span>
+            </button>
           </div>
         </div>
 

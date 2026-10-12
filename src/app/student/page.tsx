@@ -444,7 +444,12 @@ export default function StudentPortalPage() {
 
         {/* Schedule Tab View */}
         {activeTab === 'schedule' && (
-          <SmartSchedulePlanner userId={studentProfile.id} initialEvents={scheduleEvents} />
+          <SmartSchedulePlanner
+            userId={studentProfile.id}
+            initialEvents={scheduleEvents}
+            studentName={studentProfile.full_name}
+            className={studentClasses[0]?.name || 'Dersly Sınıfı'}
+          />
         )}
 
         {/* Overview Tab (Lessons & Homeworks) */}

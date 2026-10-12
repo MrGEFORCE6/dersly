@@ -1777,6 +1777,49 @@ export async function createScheduleEvent(event: ScheduleEventInsert): Promise<S
   return toSave;
 }
 
+export async function createBulkScheduleEvents(events: ScheduleEventInsert[]): Promise<ScheduleEvent[]> {
+  initializeLocalStorage();
+  const supabase = createClient();
+  const now = new Date().toISOString();
+  const toSaveList: ScheduleEvent[] = events.map((ev, index) => ({
+    id: `se-${Date.now()}-${index}`,
+    user_id: ev.user_id,
+    title: ev.title,
+    subject: ev.subject,
+    event_type: ev.event_type || 'school',
+    day_of_week: ev.day_of_week,
+    start_time: ev.start_time,
+    end_time: ev.end_time,
+    specific_date: ev.specific_date || null,
+    location_or_link: ev.location_or_link || null,
+    color: ev.color || 'indigo',
+    notes: ev.notes || null,
+    is_completed: ev.is_completed || false,
+    created_at: now,
+    updated_at: now,
+  }));
+
+  if (isRealSupabaseConfigured()) {
+    try {
+      const { data, error } = await (supabase
+        .from('schedule_events') as any)
+        .insert(toSaveList)
+        .select();
+      if (!error && data) {
+        const local = getLocalData<ScheduleEvent>(STORAGE_KEYS.SCHEDULE_EVENTS, initialSeedScheduleEvents);
+        setLocalData(STORAGE_KEYS.SCHEDULE_EVENTS, [...local, ...(data as ScheduleEvent[])]);
+        return data as ScheduleEvent[];
+      }
+    } catch (e) {
+      console.warn('Supabase createBulkScheduleEvents fallback:', e);
+    }
+  }
+
+  const local = getLocalData<ScheduleEvent>(STORAGE_KEYS.SCHEDULE_EVENTS, initialSeedScheduleEvents);
+  setLocalData(STORAGE_KEYS.SCHEDULE_EVENTS, [...local, ...toSaveList]);
+  return toSaveList;
+}
+
 export async function updateScheduleEvent(
   id: string,
   updates: ScheduleEventUpdate

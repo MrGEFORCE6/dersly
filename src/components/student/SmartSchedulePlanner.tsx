@@ -30,13 +30,22 @@ import {
   X,
   MapPin,
   ExternalLink,
-  Info
+  Info,
+  FileSpreadsheet,
+  Printer,
+  Brain,
+  Download,
 } from 'lucide-react';
+import { ExcelImportModal } from '@/components/common/ExcelImportModal';
+import { HeuristicStudyModal } from '@/components/student/HeuristicStudyModal';
+import { PrintableTimetableModal } from '@/components/common/PrintableTimetableModal';
 
 interface SmartSchedulePlannerProps {
   userId: string;
   initialEvents?: ScheduleEvent[];
   isTeacherView?: boolean;
+  studentName?: string;
+  className?: string;
 }
 
 const DAYS = [
@@ -99,12 +108,19 @@ export function SmartSchedulePlanner({
   userId,
   initialEvents = [],
   isTeacherView = false,
+  studentName = 'Öğrenci',
+  className = 'Dersly Sınıfı',
 }: SmartSchedulePlannerProps) {
   const [events, setEvents] = useState<ScheduleEvent[]>(initialEvents);
   const [filterType, setFilterType] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'week' | 'day'>('week');
   const [selectedDay, setSelectedDay] = useState<number>(0);
   const [todayDayIndex, setTodayDayIndex] = useState<number>(-1);
+
+  // Phase 4 Modals State
+  const [isExcelImportOpen, setIsExcelImportOpen] = useState(false);
+  const [isHeuristicModalOpen, setIsHeuristicModalOpen] = useState(false);
+  const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
 
   React.useEffect(() => {
     const today = new Date().getDay();
@@ -265,13 +281,40 @@ export function SmartSchedulePlanner({
             </p>
           </div>
 
-          <div className="flex items-center gap-3 w-full sm:w-auto">
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+            <button
+              onClick={() => setIsHeuristicModalOpen(true)}
+              className="px-3.5 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/20 font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm"
+              title="Yapay Zeka Destekli Akıllı Etüt Planlayıcı"
+            >
+              <Brain className="w-3.5 h-3.5 text-amber-500" />
+              <span>Akıllı Etüt Planla</span>
+            </button>
+
+            <button
+              onClick={() => setIsExcelImportOpen(true)}
+              className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm"
+              title="Excel veya CSV ile Program Yükle"
+            >
+              <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-500" />
+              <span>Excel/CSV İçe Aktar</span>
+            </button>
+
+            <button
+              onClick={() => setIsPrintModalOpen(true)}
+              className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm"
+              title="A4 Yazdır & Dışa Aktar"
+            >
+              <Printer className="w-3.5 h-3.5 text-indigo-500" />
+              <span>Yazdır & İndir</span>
+            </button>
+
             <button
               onClick={() => handleOpenAddModal()}
-              className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+              className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-indigo-600/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
             >
               <Plus className="w-4 h-4" />
-              Etkinlik / Ders Ekle
+              <span>Ders Ekle</span>
             </button>
           </div>
         </div>
@@ -815,6 +858,38 @@ export function SmartSchedulePlanner({
           </div>
         </div>
       )}
+
+      {/* Phase 4: Excel / CSV Import Modal */}
+      <ExcelImportModal
+        isOpen={isExcelImportOpen}
+        onClose={() => setIsExcelImportOpen(false)}
+        userId={userId}
+        existingEvents={events}
+        onImportSuccess={(created) => {
+          setEvents((prev) => [...prev, ...created]);
+        }}
+      />
+
+      {/* Phase 4: AI & Heuristic Study Plan Modal */}
+      <HeuristicStudyModal
+        isOpen={isHeuristicModalOpen}
+        onClose={() => setIsHeuristicModalOpen(false)}
+        userId={userId}
+        existingEvents={events}
+        onPlanApplied={(created) => {
+          setEvents((prev) => [...prev, ...created]);
+        }}
+      />
+
+      {/* Phase 4: A4 Printable Timetable Modal */}
+      <PrintableTimetableModal
+        isOpen={isPrintModalOpen}
+        onClose={() => setIsPrintModalOpen(false)}
+        events={events}
+        studentName={studentName}
+        className={className}
+      />
     </div>
   );
 }
+
