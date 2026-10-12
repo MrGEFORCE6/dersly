@@ -5,7 +5,7 @@ import { detectScheduleConflict } from './supabaseService';
 
 export interface ParsedFileResult {
   headers: string[];
-  rows: Record<string, any>[];
+  rows: Record<string, unknown>[];
   fileName: string;
   rowCount: number;
 }
@@ -24,7 +24,7 @@ export interface ScheduleImportMapping {
 export interface ValidatedImportItem {
   index: number;
   event: ScheduleEventInsert;
-  raw: Record<string, any>;
+  raw: Record<string, unknown>;
   isValid: boolean;
   errors: string[];
   conflicts: string[];
@@ -37,6 +37,36 @@ export interface HeuristicPlanOptions {
   sessionDurationMinutes?: number; // default 45
   breakDurationMinutes?: number; // default 15
   selectedSubjects?: string[];
+}
+
+export interface StudentExportItem {
+  profile?: {
+    full_name?: string;
+    username?: string;
+    phone?: string;
+  };
+  name?: string;
+  stats?: {
+    remainingHours?: number;
+    completedHomeworks?: number;
+  };
+  remainingHours?: number;
+  className?: string;
+  classes?: Array<{ name?: string }>;
+}
+
+export interface HomeworkExportItem {
+  title?: string | null;
+  description?: string;
+  lesson?: { title?: string };
+  subject?: string;
+  student?: { full_name?: string };
+  class_name?: string;
+  due_date?: string | null;
+  estimated_minutes?: number | null;
+  status?: string;
+  score?: number | null;
+  teacher_feedback?: string | null;
 }
 
 export const TURKISH_DAYS = [
@@ -136,7 +166,7 @@ export function exportScheduleToXLSX(events: ScheduleEvent[], fileName = 'haftal
 /**
  * Export Students roster for Teachers
  */
-export function exportStudentsToXLSX(students: any[], fileName = 'ogrenci_listesi.xlsx') {
+export function exportStudentsToXLSX(students: StudentExportItem[], fileName = 'ogrenci_listesi.xlsx') {
   const data = students.map((s) => ({
     'Öğrenci Adı Soyadı': s.profile?.full_name || s.name || '',
     'Kullanıcı Adı': s.profile?.username ? `@${s.profile.username}` : '',
@@ -161,7 +191,7 @@ export function exportStudentsToXLSX(students: any[], fileName = 'ogrenci_listes
   XLSX.writeFile(wb, fileName);
 }
 
-export function exportStudentsToCSV(students: any[], fileName = 'ogrenci_listesi.csv') {
+export function exportStudentsToCSV(students: StudentExportItem[], fileName = 'ogrenci_listesi.csv') {
   const data = students.map((s) => ({
     'Öğrenci Adı Soyadı': s.profile?.full_name || s.name || '',
     'Kullanıcı Adı': s.profile?.username ? `@${s.profile.username}` : '',
@@ -179,7 +209,7 @@ export function exportStudentsToCSV(students: any[], fileName = 'ogrenci_listesi
 /**
  * Export Homeworks for Teachers
  */
-export function exportHomeworksToXLSX(homeworks: any[], fileName = 'odev_degerlendirme_raporu.xlsx') {
+export function exportHomeworksToXLSX(homeworks: HomeworkExportItem[], fileName = 'odev_degerlendirme_raporu.xlsx') {
   const data = homeworks.map((h) => ({
     'Ödev Başlığı': h.title || h.description || '',
     'Ders': h.lesson?.title || h.subject || 'Genel',
@@ -204,7 +234,7 @@ export function exportHomeworksToXLSX(homeworks: any[], fileName = 'odev_degerle
   ];
 
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Ödevler ve Değerlendirmeler');
+  XLSX.utils.book_append_sheet(wb, ws, 'Öğdevler ve Değerlendirmeler');
   XLSX.writeFile(wb, fileName);
 }
 
@@ -312,7 +342,7 @@ export async function parseSpreadsheetOrCSV(file: File): Promise<ParsedFileResul
         skipEmptyLines: true,
         complete: (results) => {
           const headers = results.meta.fields || [];
-          const rows = results.data as Record<string, any>[];
+          const rows = results.data as Record<string, unknown>[];
           resolve({
             headers,
             rows,
@@ -334,7 +364,7 @@ export async function parseSpreadsheetOrCSV(file: File): Promise<ParsedFileResul
   }
 
   const worksheet = workbook.Sheets[firstSheetName];
-  const jsonData = XLSX.utils.sheet_to_json<Record<string, any>>(worksheet, { defval: '' });
+  const jsonData = XLSX.utils.sheet_to_json<Record<string, unknown>>(worksheet, { defval: '' });
 
   if (jsonData.length === 0) {
     throw new Error('Excel çalışma sayfası boş.');
@@ -393,7 +423,7 @@ export function detectDefaultScheduleMapping(headers: string[]): ScheduleImportM
 /**
  * Normalizes day of week to 0 (Pazartesi) through 6 (Pazar)
  */
-export function normalizeDayOfWeek(val: any): number | null {
+export function normalizeDayOfWeek(val: unknown): number | null {
   if (val === undefined || val === null || val === '') return null;
   if (typeof val === 'number') {
     if (val >= 0 && val <= 6) return val;
@@ -406,7 +436,7 @@ export function normalizeDayOfWeek(val: any): number | null {
   if (s.startsWith('sal') || s.includes('tue') || s === 'tuesday') return 1;
   if (s.startsWith('çar') || s.startsWith('car') || s.includes('wed') || s === 'wednesday') return 2;
   if (s.startsWith('per') || s.includes('thu') || s === 'thursday') return 3;
-  if (s.startsWith('cum') && !s.includes('tesi') || s.includes('fri') || s === 'friday') return 4;
+  if ((s.startsWith('cum') && !s.includes('tesi')) || s.includes('fri') || s === 'friday') return 4;
   if (s.startsWith('cumartesi') || s.includes('cmt') || s.includes('sat') || s === 'saturday') return 5;
 
   const num = parseInt(s, 10);
@@ -420,7 +450,7 @@ export function normalizeDayOfWeek(val: any): number | null {
 /**
  * Normalizes time string to standard "HH:mm"
  */
-export function normalizeTimeString(val: any): string | null {
+export function normalizeTimeString(val: unknown): string | null {
   if (val === undefined || val === null || val === '') return null;
 
   // If number (Excel fraction of day, e.g. 0.3541666667 = 08:30)
@@ -448,7 +478,7 @@ export function normalizeTimeString(val: any): string | null {
 /**
  * Normalizes event type to ScheduleEventType
  */
-export function normalizeEventType(val: any): ScheduleEventType {
+export function normalizeEventType(val: unknown): ScheduleEventType {
   if (!val) return 'school';
   const s = String(val).trim().toLowerCase();
   if (s.includes('okul') || s.includes('school')) return 'school';
@@ -463,7 +493,7 @@ export function normalizeEventType(val: any): ScheduleEventType {
  * Validates and maps raw rows into ScheduleEventInsert items with conflict checking
  */
 export function validateAndMapScheduleRows(
-  rows: Record<string, any>[],
+  rows: Record<string, unknown>[],
   mapping: ScheduleImportMapping,
   userId: string,
   existingEvents: ScheduleEvent[]
@@ -485,17 +515,17 @@ export function validateAndMapScheduleRows(
 
     const day = normalizeDayOfWeek(rawDay);
     if (day === null) {
-      errors.push(`Geçersiz gün formatı ('${rawDay || 'Boş'}'). Pazartesi-Pazar arası olmalıdır.`);
+      errors.push(`Geçersiz gün formatı ('${String(rawDay || 'Boş')}'). Pazartesi-Pazar arası olmalıdır.`);
     }
 
     const start = normalizeTimeString(rawStart);
     if (!start) {
-      errors.push(`Geçersiz başlangıç saati ('${rawStart || 'Boş'}'). Örn: 08:30`);
+      errors.push(`Geçersiz başlangıç saati ('${String(rawStart || 'Boş')}'). Örn: 08:30`);
     }
 
     const end = normalizeTimeString(rawEnd);
     if (!end) {
-      errors.push(`Geçersiz bitiş saati ('${rawEnd || 'Boş'}'). Örn: 09:15`);
+      errors.push(`Geçersiz bitiş saati ('${String(rawEnd || 'Boş')}'). Örn: 09:15`);
     }
 
     if (start && end && start >= end) {
