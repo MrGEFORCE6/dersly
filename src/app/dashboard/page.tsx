@@ -9,7 +9,8 @@ import {
   initialHomeworks, 
   type StudentWithStats 
 } from '@/data/mockData';
-import type { Lesson, Homework, Profile } from '@/types/database.types';
+import type { Lesson, Homework, Profile, HomeworkStatus } from '@/types/database.types';
+
 import { 
   fetchProfiles, 
   fetchLessons, 
@@ -243,14 +244,22 @@ export default function DashboardPage() {
   // Update Homework status handler
   const handleUpdateHomeworkStatus = async (
     id: string,
-    newStatus: 'pending' | 'submitted' | 'reviewed'
+    newStatus: HomeworkStatus
   ) => {
     await updateHomework(id, { status: newStatus });
-    setHomeworks((prev) =>
-      prev.map((hw) => (hw.id === id ? { ...hw, status: newStatus } : hw))
-    );
-    showToast(`✓ Ödev durumu "${newStatus === 'reviewed' ? 'İncelendi' : newStatus === 'submitted' ? 'Teslim Edildi' : 'Bekliyor'}" olarak güncellendi.`);
+    const refreshed = await fetchHomeworks();
+    setHomeworks(refreshed);
+    const label =
+      newStatus === 'reviewed'
+        ? 'İncelendi'
+        : newStatus === 'submitted'
+        ? 'Teslim Edildi'
+        : newStatus === 'revision_requested'
+        ? 'Düzeltme İstendi'
+        : 'Bekliyor';
+    showToast(`✓ Ödev durumu "${label}" olarak güncellendi.`);
   };
+
 
   const handleProfileUpdated = (updated: Profile) => {
     setStudents((prev) =>
@@ -479,8 +488,10 @@ export default function DashboardPage() {
             lessons={lessons}
             onAddHomework={handleAddHomework}
             onUpdateStatus={handleUpdateHomeworkStatus}
+            onRefresh={() => fetchHomeworks().then(setHomeworks)}
           />
         )}
+
 
         {activeTab === 'billing' && (
           <BillingSection activeStudentCount={students.length} />

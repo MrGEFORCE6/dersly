@@ -19,7 +19,7 @@ exception
 end $$;
 
 do $$ begin
-    create type homework_status as enum ('pending', 'submitted', 'reviewed');
+    create type homework_status as enum ('pending', 'submitted', 'reviewed', 'revision_requested');
 exception
     when duplicate_object then null;
 end $$;
@@ -110,24 +110,35 @@ create trigger set_lessons_updated_at
     for each row
     execute function update_updated_at_column();
 
--- 3. HOMEWORKS (Ödevler ve Dosya Takibi)
+-- 3. HOMEWORKS (Gelişmiş Ödevler ve Materyal Takibi)
 create table if not exists public.homeworks (
     id uuid primary key default gen_random_uuid(),
     lesson_id uuid references public.lessons(id) on delete set null,
     student_id uuid not null references public.profiles(id) on delete cascade,
+    teacher_id uuid references public.profiles(id) on delete cascade,
+    class_id uuid references public.classes(id) on delete set null,
+    title text,
     description text not null,
     due_date timestamptz,
     status homework_status not null default 'pending',
     file_url text,
+    resource_url text,
+    estimated_minutes int default 45,
     submission_notes text,
     submitted_at timestamptz,
+    teacher_feedback text,
+    score int,
+    reviewed_at timestamptz,
     created_at timestamptz default now() not null,
     updated_at timestamptz default now() not null
 );
 
 create index if not exists idx_homeworks_lesson_id on public.homeworks(lesson_id);
 create index if not exists idx_homeworks_student_id on public.homeworks(student_id);
+create index if not exists idx_homeworks_teacher_id on public.homeworks(teacher_id);
+create index if not exists idx_homeworks_class_id on public.homeworks(class_id);
 create index if not exists idx_homeworks_status on public.homeworks(status);
+
 
 -- Homeworks Updated_at Tetikleyicisi
 drop trigger if exists set_homeworks_updated_at on public.homeworks;

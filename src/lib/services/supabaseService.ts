@@ -376,15 +376,23 @@ export async function createHomework(hw: HomeworkInsert): Promise<Homework> {
   initializeLocalStorage();
   const supabase = createClient();
   const hwToSave: Homework = {
-    id: hw.id || `hw-${Date.now()}`,
+    id: hw.id || `hw-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
     lesson_id: hw.lesson_id || null,
     student_id: hw.student_id,
+    teacher_id: hw.teacher_id || 't-001',
+    class_id: hw.class_id || null,
+    title: hw.title || null,
     description: hw.description,
     due_date: hw.due_date || null,
     status: hw.status || 'pending',
     file_url: hw.file_url || null,
+    resource_url: hw.resource_url || null,
+    estimated_minutes: hw.estimated_minutes !== undefined ? hw.estimated_minutes : 45,
     submission_notes: hw.submission_notes || null,
     submitted_at: hw.submitted_at || null,
+    teacher_feedback: hw.teacher_feedback || null,
+    score: hw.score !== undefined ? hw.score : null,
+    reviewed_at: hw.reviewed_at || null,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   };
@@ -398,7 +406,7 @@ export async function createHomework(hw: HomeworkInsert): Promise<Homework> {
         .single();
 
       if (!error && data) {
-        const local = getLocalData<Homework>(STORAGE_KEYS.HOMEWORKS, []);
+        const local = getLocalData<Homework>(STORAGE_KEYS.HOMEWORKS, initialHomeworks);
         setLocalData(STORAGE_KEYS.HOMEWORKS, [data as Homework, ...local]);
         return data as Homework;
       }
@@ -407,9 +415,64 @@ export async function createHomework(hw: HomeworkInsert): Promise<Homework> {
     }
   }
 
-  const local = getLocalData<Homework>(STORAGE_KEYS.HOMEWORKS, []);
+  const local = getLocalData<Homework>(STORAGE_KEYS.HOMEWORKS, initialHomeworks);
   setLocalData(STORAGE_KEYS.HOMEWORKS, [hwToSave, ...local]);
   return hwToSave;
+}
+
+export async function createBulkClassHomework(
+  classId: string,
+  template: Omit<HomeworkInsert, 'student_id'>
+): Promise<Homework[]> {
+  const classStudents = await fetchClassStudents(classId);
+  const createdHomeworks: Homework[] = [];
+
+  for (const item of classStudents) {
+    const studentHw = await createHomework({
+      ...template,
+      student_id: item.student.id,
+      class_id: classId,
+    });
+    createdHomeworks.push(studentHw);
+  }
+
+  return createdHomeworks;
+}
+
+export async function reviewHomework(
+  id: string,
+  evaluation: {
+    status: 'reviewed' | 'revision_requested';
+    teacher_feedback?: string | null;
+    score?: number | null;
+  }
+): Promise<Homework | null> {
+  return updateHomework(id, {
+    status: evaluation.status,
+    teacher_feedback: evaluation.teacher_feedback || null,
+    score: evaluation.score !== undefined ? evaluation.score : null,
+    reviewed_at: new Date().toISOString(),
+  });
+}
+
+export async function deleteHomework(id: string): Promise<boolean> {
+  initializeLocalStorage();
+  const supabase = createClient();
+
+  if (isRealSupabaseConfigured()) {
+    try {
+      await supabase.from('homeworks').delete().eq('id', id);
+    } catch (e) {
+      console.warn('Supabase deleteHomework error, persisting locally:', e);
+    }
+  }
+
+  const local = getLocalData<Homework>(STORAGE_KEYS.HOMEWORKS, initialHomeworks);
+  setLocalData(
+    STORAGE_KEYS.HOMEWORKS,
+    local.filter((h) => h.id !== id)
+  );
+  return true;
 }
 
 export async function updateHomework(id: string, updates: HomeworkUpdate): Promise<Homework | null> {
@@ -426,7 +489,7 @@ export async function updateHomework(id: string, updates: HomeworkUpdate): Promi
         .single();
 
       if (!error && data) {
-        const local = getLocalData<Homework>(STORAGE_KEYS.HOMEWORKS, []);
+        const local = getLocalData<Homework>(STORAGE_KEYS.HOMEWORKS, initialHomeworks);
         const updatedList = local.map((h) => (h.id === id ? (data as Homework) : h));
         setLocalData(STORAGE_KEYS.HOMEWORKS, updatedList);
         return data as Homework;
@@ -436,7 +499,7 @@ export async function updateHomework(id: string, updates: HomeworkUpdate): Promi
     }
   }
 
-  const local = getLocalData<Homework>(STORAGE_KEYS.HOMEWORKS, []);
+  const local = getLocalData<Homework>(STORAGE_KEYS.HOMEWORKS, initialHomeworks);
   let updatedHw: Homework | null = null;
   const updatedList = local.map((h) => {
     if (h.id === id) {
@@ -452,6 +515,7 @@ export async function updateHomework(id: string, updates: HomeworkUpdate): Promi
   setLocalData(STORAGE_KEYS.HOMEWORKS, updatedList);
   return updatedHw;
 }
+
 
 /**
  * Upload file to Supabase Storage Bucket ('homework-files' or 'avatars')

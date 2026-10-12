@@ -8,8 +8,10 @@ export type Json =
 
 export type UserRole = 'teacher' | 'student';
 export type LessonStatus = 'scheduled' | 'completed' | 'cancelled';
-export type HomeworkStatus = 'pending' | 'submitted' | 'reviewed';
+export type HomeworkStatus = 'pending' | 'submitted' | 'reviewed' | 'revision_requested';
 export type PaymentStatus = 'pending' | 'partially_paid' | 'completed' | 'cancelled';
+
+
 export type FeedType = 'student_campus' | 'teachers_lounge';
 export type PostTag = 'question' | 'general' | 'resource' | 'announcement';
 export type ScheduleEventType = 'school' | 'private_lesson' | 'personal_study' | 'review' | 'exam';
@@ -171,25 +173,42 @@ export interface Database {
           id: string;
           lesson_id: string | null;
           student_id: string;
+          teacher_id?: string | null;
+          class_id?: string | null;
+          title?: string | null;
           description: string;
           due_date: string | null;
           status: HomeworkStatus;
           file_url: string | null;
+          resource_url?: string | null;
+          estimated_minutes?: number | null;
           submission_notes: string | null;
           submitted_at: string | null;
+          teacher_feedback?: string | null;
+          score?: number | null;
+          reviewed_at?: string | null;
           created_at: string;
           updated_at: string;
         };
+
         Insert: {
           id?: string;
           lesson_id?: string | null;
           student_id: string;
+          teacher_id?: string | null;
+          class_id?: string | null;
+          title?: string | null;
           description: string;
           due_date?: string | null;
           status?: HomeworkStatus;
           file_url?: string | null;
+          resource_url?: string | null;
+          estimated_minutes?: number | null;
           submission_notes?: string | null;
           submitted_at?: string | null;
+          teacher_feedback?: string | null;
+          score?: number | null;
+          reviewed_at?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -197,15 +216,24 @@ export interface Database {
           id?: string;
           lesson_id?: string | null;
           student_id?: string;
+          teacher_id?: string | null;
+          class_id?: string | null;
+          title?: string | null;
           description?: string;
           due_date?: string | null;
           status?: HomeworkStatus;
           file_url?: string | null;
+          resource_url?: string | null;
+          estimated_minutes?: number | null;
           submission_notes?: string | null;
           submitted_at?: string | null;
+          teacher_feedback?: string | null;
+          score?: number | null;
+          reviewed_at?: string | null;
           created_at?: string;
           updated_at?: string;
         };
+
         Relationships: [
           {
             foreignKeyName: "homeworks_lesson_id_fkey";
