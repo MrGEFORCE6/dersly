@@ -27,7 +27,11 @@ import type {
   ClassInsert,
   ClassUpdate,
   ClassStudent,
-  ClassStudentInsert
+  ClassStudentInsert,
+  ScheduleEvent,
+  ScheduleEventInsert,
+  ScheduleEventUpdate,
+  ScheduleConflict
 } from '@/types/database.types';
 import { initialStudents, initialLessons, initialHomeworks, currentTeacher } from '@/data/mockData';
 
@@ -45,6 +49,7 @@ const STORAGE_KEYS = {
   TEACHER_STUDENTS: 'derspompa_teacher_students_v3',
   CLASSES: 'dersly_classes_v1',
   CLASS_STUDENTS: 'dersly_class_students_v1',
+  SCHEDULE_EVENTS: 'dersly_schedule_events_v1',
 };
 
 // Initialize Local Storage with clean empty state (no hardcoded mock users)
@@ -1401,4 +1406,379 @@ export async function fetchStudentClasses(studentId: string): Promise<Class[]> {
   const studentEnrollments = enrollments.filter((cs) => cs.student_id === studentId);
   return classes.filter((c) => studentEnrollments.some((se) => se.class_id === c.id));
 }
+
+/* ==============================================================================
+   SCHEDULE EVENTS (SMART TIMETABLE & STUDY PLAN WITH CONFLICT ENGINE)
+   ============================================================================== */
+export const initialSeedScheduleEvents: ScheduleEvent[] = [
+  {
+    id: 'se-1',
+    user_id: 's-001',
+    title: 'Matematik: Türev & İntegral',
+    subject: 'Matematik',
+    event_type: 'school',
+    day_of_week: 0, // Pazartesi
+    start_time: '09:00',
+    end_time: '09:40',
+    specific_date: null,
+    location_or_link: '12-A Dersliği',
+    color: 'indigo',
+    notes: 'Kazanım testleri çözülecek',
+    is_completed: true,
+    created_at: '2026-10-12T00:00:00.000Z',
+    updated_at: '2026-10-12T00:00:00.000Z',
+  },
+  {
+    id: 'se-2',
+    user_id: 's-001',
+    title: 'Fizik: Manyetizma & İndüksiyon',
+    subject: 'Fizik',
+    event_type: 'school',
+    day_of_week: 0,
+    start_time: '10:00',
+    end_time: '10:40',
+    specific_date: null,
+    location_or_link: 'Fen Laboratuvarı',
+    color: 'blue',
+    notes: 'Manyetik alan formülleri tekrar edilecek',
+    is_completed: true,
+    created_at: '2026-10-12T00:00:00.000Z',
+    updated_at: '2026-10-12T00:00:00.000Z',
+  },
+  {
+    id: 'se-3',
+    user_id: 's-001',
+    title: 'Bireysel Etüt: 80 Soru AYT Matematik',
+    subject: 'Matematik',
+    event_type: 'personal_study',
+    day_of_week: 0,
+    start_time: '15:30',
+    end_time: '17:00',
+    specific_date: null,
+    location_or_link: 'Ev Çalışma Masası',
+    color: 'emerald',
+    notes: 'Apotemi Türev Fasikülü sf. 45-60',
+    is_completed: true,
+    created_at: '2026-10-12T00:00:00.000Z',
+    updated_at: '2026-10-12T00:00:00.000Z',
+  },
+  {
+    id: 'se-4',
+    user_id: 's-001',
+    title: 'Kimya: Organik Bileşikler',
+    subject: 'Kimya',
+    event_type: 'school',
+    day_of_week: 1, // Salı
+    start_time: '09:00',
+    end_time: '09:40',
+    specific_date: null,
+    location_or_link: '12-A Dersliği',
+    color: 'indigo',
+    notes: 'Fonksiyonel gruplar',
+    is_completed: false,
+    created_at: '2026-10-12T00:00:00.000Z',
+    updated_at: '2026-10-12T00:00:00.000Z',
+  },
+  {
+    id: 'se-5',
+    user_id: 's-001',
+    title: 'Özel Ders: AYT Geometri Koçluğu',
+    subject: 'Geometri',
+    event_type: 'private_lesson',
+    day_of_week: 1,
+    start_time: '14:00',
+    end_time: '15:30',
+    specific_date: null,
+    location_or_link: 'Dersly Canlı Tahta',
+    color: 'violet',
+    notes: 'Çemberde Açılar & Teğetler',
+    is_completed: false,
+    created_at: '2026-10-12T00:00:00.000Z',
+    updated_at: '2026-10-12T00:00:00.000Z',
+  },
+  {
+    id: 'se-6',
+    user_id: 's-001',
+    title: 'Haftalık Konu Tekrarı & Hata Defteri',
+    subject: 'Fizik',
+    event_type: 'review',
+    day_of_week: 1,
+    start_time: '16:30',
+    end_time: '18:00',
+    specific_date: null,
+    location_or_link: 'Kütüphane',
+    color: 'amber',
+    notes: 'Hatalı soruların çözümleri tekrar edilecek',
+    is_completed: false,
+    created_at: '2026-10-12T00:00:00.000Z',
+    updated_at: '2026-10-12T00:00:00.000Z',
+  },
+  {
+    id: 'se-7',
+    user_id: 's-001',
+    title: 'Biyoloji: Kalıtım & Genetik',
+    subject: 'Biyoloji',
+    event_type: 'school',
+    day_of_week: 2, // Çarşamba
+    start_time: '09:00',
+    end_time: '09:40',
+    specific_date: null,
+    location_or_link: '12-A Dersliği',
+    color: 'emerald',
+    notes: 'Monohibrit ve Dihibrit Çaprazlamalar',
+    is_completed: false,
+    created_at: '2026-10-12T00:00:00.000Z',
+    updated_at: '2026-10-12T00:00:00.000Z',
+  },
+  {
+    id: 'se-8',
+    user_id: 's-001',
+    title: 'Bireysel Etüt: Paragraf ve Problem Rutini',
+    subject: 'Türkçe & Matematik',
+    event_type: 'personal_study',
+    day_of_week: 2,
+    start_time: '15:00',
+    end_time: '16:30',
+    specific_date: null,
+    location_or_link: 'Ev Çalışma Masası',
+    color: 'emerald',
+    notes: '30 Paragraf + 20 Problem',
+    is_completed: false,
+    created_at: '2026-10-12T00:00:00.000Z',
+    updated_at: '2026-10-12T00:00:00.000Z',
+  },
+  {
+    id: 'se-9',
+    user_id: 's-001',
+    title: 'Haftalık TYT Kurumsal Deneme Sınavı',
+    subject: 'Genel TYT',
+    event_type: 'exam',
+    day_of_week: 4, // Cuma
+    start_time: '14:00',
+    end_time: '16:45',
+    specific_date: null,
+    location_or_link: 'Okul Konferans Salonu',
+    color: 'rose',
+    notes: '165 Dakika TYT Süresi',
+    is_completed: false,
+    created_at: '2026-10-12T00:00:00.000Z',
+    updated_at: '2026-10-12T00:00:00.000Z',
+  },
+];
+
+/**
+ * Zaman Çakışması Kontrol Motoru (Conflict Detection Engine)
+ * Verilen gün/tarih ve saat diliminde mevcut etkinliklerle örtüşme olup olmadığını denetler.
+ */
+export function detectScheduleConflict(
+  existingEvents: ScheduleEvent[],
+  candidate: {
+    day_of_week: number;
+    start_time: string;
+    end_time: string;
+    specific_date?: string | null;
+    excludeId?: string;
+  }
+): ScheduleConflict {
+  const conflicts = existingEvents.filter((ev) => {
+    if (candidate.excludeId && ev.id === candidate.excludeId) return false;
+
+    // Gün veya tarih eşleşmesi kontrolü
+    const sameDay =
+      (candidate.specific_date && ev.specific_date && candidate.specific_date === ev.specific_date) ||
+      (!candidate.specific_date && !ev.specific_date && candidate.day_of_week === ev.day_of_week) ||
+      (candidate.specific_date && !ev.specific_date && candidate.day_of_week === ev.day_of_week) ||
+      (!candidate.specific_date && ev.specific_date && candidate.day_of_week === ev.day_of_week);
+
+    if (!sameDay) return false;
+
+    // Saat çakışması kontrolü: (startA < endB && endA > startB)
+    const timeOverlap = candidate.start_time < ev.end_time && candidate.end_time > ev.start_time;
+    return timeOverlap;
+  });
+
+  if (conflicts.length > 0) {
+    const conflictNames = conflicts
+      .map((c) => `"${c.title}" (${c.start_time} - ${c.end_time})`)
+      .join(', ');
+    return {
+      hasConflict: true,
+      conflictingEvents: conflicts,
+      message: `Zaman çakışması tespit edildi! Bu saatte mevcut: ${conflictNames}`,
+    };
+  }
+
+  return {
+    hasConflict: false,
+    conflictingEvents: [],
+  };
+}
+
+/**
+ * Öğretmen Özel Ders Randevusu ile Öğrencinin Okul/Etüt Programı Arasındaki Çakışmayı Denetler
+ */
+export function detectLessonConflictWithSchedule(
+  scheduleEvents: ScheduleEvent[],
+  lesson: {
+    start_time: string; // ISO string örn: 2026-10-13T14:00:00
+    end_time: string;   // ISO string örn: 2026-10-13T15:30:00
+    excludeLessonId?: string;
+  }
+): ScheduleConflict {
+  try {
+    const d = new Date(lesson.start_time);
+    const jsDay = d.getDay(); // 0 Pazar, 1 Pazartesi...
+    const dayOfWeek = (jsDay + 6) % 7; // 0 Pazartesi, ..., 6 Pazar
+    const startHour = lesson.start_time.includes('T') ? lesson.start_time.split('T')[1].slice(0, 5) : '14:00';
+    const endHour = lesson.end_time.includes('T') ? lesson.end_time.split('T')[1].slice(0, 5) : '15:00';
+    const specificDate = lesson.start_time.includes('T') ? lesson.start_time.split('T')[0] : null;
+
+    return detectScheduleConflict(scheduleEvents, {
+      day_of_week: dayOfWeek,
+      start_time: startHour,
+      end_time: endHour,
+      specific_date: specificDate,
+    });
+  } catch {
+    return { hasConflict: false, conflictingEvents: [] };
+  }
+}
+
+export async function fetchScheduleEvents(userId?: string): Promise<ScheduleEvent[]> {
+  initializeLocalStorage();
+  const supabase = createClient();
+
+  if (isRealSupabaseConfigured()) {
+    try {
+      let query = supabase.from('schedule_events').select('*').order('start_time', { ascending: true });
+      if (userId) {
+        query = query.eq('user_id', userId);
+      }
+      const { data, error } = await query;
+      if (!error && data) {
+        return data as ScheduleEvent[];
+      }
+    } catch (e) {
+      console.warn('Supabase fetchScheduleEvents fallback:', e);
+    }
+  }
+
+  const local = getLocalData<ScheduleEvent>(STORAGE_KEYS.SCHEDULE_EVENTS, initialSeedScheduleEvents);
+  if (userId) {
+    return local.filter((ev) => ev.user_id === userId);
+  }
+  return local;
+}
+
+export async function createScheduleEvent(event: ScheduleEventInsert): Promise<ScheduleEvent> {
+  initializeLocalStorage();
+  const supabase = createClient();
+  const toSave: ScheduleEvent = {
+    id: `se-${Date.now()}`,
+    user_id: event.user_id,
+    title: event.title,
+    subject: event.subject,
+    event_type: event.event_type || 'school',
+    day_of_week: event.day_of_week,
+    start_time: event.start_time,
+    end_time: event.end_time,
+    specific_date: event.specific_date || null,
+    location_or_link: event.location_or_link || null,
+    color: event.color || 'indigo',
+    notes: event.notes || null,
+    is_completed: event.is_completed || false,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  };
+
+  if (isRealSupabaseConfigured()) {
+    try {
+      const { data, error } = await (supabase
+        .from('schedule_events') as any)
+        .insert(toSave)
+        .select()
+        .single();
+      if (!error && data) {
+        const local = getLocalData<ScheduleEvent>(STORAGE_KEYS.SCHEDULE_EVENTS, initialSeedScheduleEvents);
+        setLocalData(STORAGE_KEYS.SCHEDULE_EVENTS, [...local, data as ScheduleEvent]);
+        return data as ScheduleEvent;
+      }
+    } catch (e) {
+      console.warn('Supabase createScheduleEvent fallback:', e);
+    }
+  }
+
+  const local = getLocalData<ScheduleEvent>(STORAGE_KEYS.SCHEDULE_EVENTS, initialSeedScheduleEvents);
+  setLocalData(STORAGE_KEYS.SCHEDULE_EVENTS, [...local, toSave]);
+  return toSave;
+}
+
+export async function updateScheduleEvent(
+  id: string,
+  updates: ScheduleEventUpdate
+): Promise<ScheduleEvent | null> {
+  initializeLocalStorage();
+  const supabase = createClient();
+
+  if (isRealSupabaseConfigured()) {
+    try {
+      const { data, error } = await (supabase
+        .from('schedule_events') as any)
+        .update({ ...updates, updated_at: new Date().toISOString() })
+        .eq('id', id)
+        .select()
+        .single();
+      if (!error && data) {
+        const local = getLocalData<ScheduleEvent>(STORAGE_KEYS.SCHEDULE_EVENTS, initialSeedScheduleEvents);
+        setLocalData(
+          STORAGE_KEYS.SCHEDULE_EVENTS,
+          local.map((ev) => (ev.id === id ? (data as ScheduleEvent) : ev))
+        );
+        return data as ScheduleEvent;
+      }
+    } catch (e) {
+      console.warn('Supabase updateScheduleEvent fallback:', e);
+    }
+  }
+
+  const local = getLocalData<ScheduleEvent>(STORAGE_KEYS.SCHEDULE_EVENTS, initialSeedScheduleEvents);
+  let updatedEvent: ScheduleEvent | null = null;
+  const updatedList = local.map((ev) => {
+    if (ev.id === id) {
+      updatedEvent = { ...ev, ...updates, updated_at: new Date().toISOString() };
+      return updatedEvent;
+    }
+    return ev;
+  });
+  setLocalData(STORAGE_KEYS.SCHEDULE_EVENTS, updatedList);
+  return updatedEvent;
+}
+
+export async function deleteScheduleEvent(id: string): Promise<boolean> {
+  initializeLocalStorage();
+  const supabase = createClient();
+
+  if (isRealSupabaseConfigured()) {
+    try {
+      await supabase.from('schedule_events').delete().eq('id', id);
+    } catch (e) {
+      console.warn('Supabase deleteScheduleEvent fallback:', e);
+    }
+  }
+
+  const local = getLocalData<ScheduleEvent>(STORAGE_KEYS.SCHEDULE_EVENTS, initialSeedScheduleEvents);
+  setLocalData(
+    STORAGE_KEYS.SCHEDULE_EVENTS,
+    local.filter((ev) => ev.id !== id)
+  );
+  return true;
+}
+
+export async function toggleScheduleEventCompleted(
+  id: string,
+  isCompleted: boolean
+): Promise<ScheduleEvent | null> {
+  return updateScheduleEvent(id, { is_completed: isCompleted });
+}
+
 

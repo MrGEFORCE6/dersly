@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
-import type { Lesson } from '@/types/database.types';
+import { useState, useEffect } from 'react';
+import type { Lesson, ScheduleEvent } from '@/types/database.types';
 import type { StudentWithStats } from '@/data/mockData';
-import { X, Calendar, Clock, BookOpen, User, FileText, CheckCircle2 } from 'lucide-react';
+import { fetchScheduleEvents, detectLessonConflictWithSchedule } from '@/lib/services/supabaseService';
+import { X, Calendar, Clock, BookOpen, User, FileText, CheckCircle2, AlertTriangle } from 'lucide-react';
 
 interface AddLessonModalProps {
   isOpen: boolean;
@@ -25,6 +26,33 @@ export function AddLessonModal({
   const [endTime, setEndTime] = useState('15:30');
   const [notes, setNotes] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [studentSchedule, setStudentSchedule] = useState<ScheduleEvent[]>([]);
+  const [conflictWarning, setConflictWarning] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isOpen && studentId) {
+      fetchScheduleEvents(studentId).then((events) => {
+        setStudentSchedule(events);
+      });
+    }
+  }, [isOpen, studentId]);
+
+  useEffect(() => {
+    if (studentSchedule.length > 0 && date && startTime && endTime && startTime < endTime) {
+      const check = detectLessonConflictWithSchedule(studentSchedule, {
+        start_time: `${date}T${startTime}:00`,
+        end_time: `${date}T${endTime}:00`,
+      });
+      if (check.hasConflict) {
+        setConflictWarning(check.message || 'Öğrencinin bu saatte başka bir dersi var!');
+      } else {
+        setConflictWarning(null);
+      }
+    } else {
+      setConflictWarning(null);
+    }
+  }, [studentSchedule, date, startTime, endTime]);
+
 
   if (!isOpen) return null;
 
@@ -90,6 +118,17 @@ export function AddLessonModal({
             <span>{error}</span>
           </div>
         )}
+
+        {conflictWarning && (
+          <div className="mt-4 p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs flex items-start gap-2.5 animate-in fade-in">
+            <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+            <div>
+              <span className="font-bold block">⚠️ Dikkat: Öğrenci Zaman Çakışması</span>
+              <span>{conflictWarning}</span>
+            </div>
+          </div>
+        )}
+
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="mt-5 space-y-4">

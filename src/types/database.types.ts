@@ -12,6 +12,8 @@ export type HomeworkStatus = 'pending' | 'submitted' | 'reviewed';
 export type PaymentStatus = 'pending' | 'partially_paid' | 'completed' | 'cancelled';
 export type FeedType = 'student_campus' | 'teachers_lounge';
 export type PostTag = 'question' | 'general' | 'resource' | 'announcement';
+export type ScheduleEventType = 'school' | 'private_lesson' | 'personal_study' | 'review' | 'exam';
+
 
 export interface ExamStats {
   tyt_net?: number;
@@ -566,6 +568,67 @@ export interface Database {
           }
         ];
       };
+      schedule_events: {
+        Row: {
+          id: string;
+          user_id: string;
+          title: string;
+          subject: string;
+          event_type: ScheduleEventType;
+          day_of_week: number;
+          start_time: string;
+          end_time: string;
+          specific_date: string | null;
+          location_or_link: string | null;
+          color: string | null;
+          notes: string | null;
+          is_completed: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          title: string;
+          subject: string;
+          event_type?: ScheduleEventType;
+          day_of_week: number;
+          start_time: string;
+          end_time: string;
+          specific_date?: string | null;
+          location_or_link?: string | null;
+          color?: string | null;
+          notes?: string | null;
+          is_completed?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          title?: string;
+          subject?: string;
+          event_type?: ScheduleEventType;
+          day_of_week?: number;
+          start_time?: string;
+          end_time?: string;
+          specific_date?: string | null;
+          location_or_link?: string | null;
+          color?: string | null;
+          notes?: string | null;
+          is_completed?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "schedule_events_user_id_fkey";
+            columns: ["user_id"];
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -619,6 +682,16 @@ export type ClassUpdate = Database['public']['Tables']['classes']['Update'];
 export type ClassStudent = Database['public']['Tables']['class_students']['Row'];
 export type ClassStudentInsert = Database['public']['Tables']['class_students']['Insert'];
 
+export type ScheduleEvent = Database['public']['Tables']['schedule_events']['Row'];
+export type ScheduleEventInsert = Database['public']['Tables']['schedule_events']['Insert'];
+export type ScheduleEventUpdate = Database['public']['Tables']['schedule_events']['Update'];
+
+export interface ScheduleConflict {
+  hasConflict: boolean;
+  conflictingEvents: ScheduleEvent[];
+  message?: string;
+}
+
 export type Post = Database['public']['Tables']['posts']['Row'];
 export type PostInsert = Database['public']['Tables']['posts']['Insert'];
 export type PostUpdate = Database['public']['Tables']['posts']['Update'];
@@ -632,4 +705,5 @@ export type LikeInsert = Database['public']['Tables']['likes']['Insert'];
 
 export type Follow = Database['public']['Tables']['follows']['Row'];
 export type FollowInsert = Database['public']['Tables']['follows']['Insert'];
+
 

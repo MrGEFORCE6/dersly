@@ -13,9 +13,11 @@ import {
   fetchBooks,
   createBook,
   deleteBook,
-  fetchStudentClasses
+  fetchStudentClasses,
+  fetchScheduleEvents,
 } from '@/lib/services/supabaseService';
-import type { Lesson, Homework, Profile, Book, Class } from '@/types/database.types';
+import type { Lesson, Homework, Profile, Book, Class, ScheduleEvent } from '@/types/database.types';
+import { SmartSchedulePlanner } from '@/components/student/SmartSchedulePlanner';
 import { ThemeSelector } from '@/components/theme/ThemeSelector';
 import {
   GraduationCap,
@@ -23,6 +25,7 @@ import {
   Clock,
   BookOpen,
   UploadCloud,
+
   CheckCircle2,
   FileText,
   ExternalLink,
@@ -100,14 +103,17 @@ export default function StudentPortalPage() {
   const [isAiLoading, setIsAiLoading] = useState(false);
 
   const [studentClasses, setStudentClasses] = useState<Class[]>([]);
+  const [scheduleEvents, setScheduleEvents] = useState<ScheduleEvent[]>([]);
+  const [activeTab, setActiveTab] = useState<'schedule' | 'overview' | 'library'>('schedule');
 
   useEffect(() => {
     async function loadData() {
-      const [dbProfiles, dbLessons, dbHws, dbBooks] = await Promise.all([
+      const [dbProfiles, dbLessons, dbHws, dbBooks, dbSchedule] = await Promise.all([
         fetchProfiles(),
         fetchLessons(),
         fetchHomeworks(),
         fetchBooks(),
+        fetchScheduleEvents(),
       ]);
 
       let currentStudentId = 's-001';
@@ -119,12 +125,14 @@ export default function StudentPortalPage() {
       setLessons(dbLessons || []);
       setHomeworks(dbHws || []);
       setBooks(dbBooks || []);
+      setScheduleEvents(dbSchedule || []);
 
       const classes = await fetchStudentClasses(currentStudentId);
       setStudentClasses(classes);
     }
     loadData();
   }, []);
+
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -394,18 +402,62 @@ export default function StudentPortalPage() {
           </div>
         </div>
 
-        {/* 3-Section Grid: Lessons, Bookshelf & Homeworks */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* 1. Upcoming & Completed Lessons */}
-          <div className="rounded-3xl p-6 glass-panel shadow-xl space-y-4 flex flex-col justify-between">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-700/60">
-                <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-                  Ders Takvimim
-                </h3>
-                <span className="text-xs text-slate-500 dark:text-slate-400 font-mono">{lessons.length} Oturum</span>
-              </div>
+        {/* Student Navigation Tabs */}
+        <div className="flex flex-wrap items-center gap-2 p-1.5 rounded-2xl bg-white/70 dark:bg-slate-900/70 border border-slate-200/80 dark:border-slate-800 shadow-sm w-fit">
+          <button
+            onClick={() => setActiveTab('schedule')}
+            className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all ${
+              activeTab === 'schedule'
+                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            <Calendar className="w-4 h-4" />
+            Haftalık Ders & Etüt Programı
+          </button>
+          <button
+            onClick={() => setActiveTab('overview')}
+            className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all ${
+              activeTab === 'overview'
+                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            <GraduationCap className="w-4 h-4" />
+            Ödevler & Randevular
+          </button>
+          <button
+            onClick={() => setActiveTab('library')}
+            className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all ${
+              activeTab === 'library'
+                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            <Library className="w-4 h-4" />
+            Akıllı Kitaplığım ({books.length})
+          </button>
+        </div>
+
+        {/* Schedule Tab View */}
+        {activeTab === 'schedule' && (
+          <SmartSchedulePlanner userId={studentProfile.id} initialEvents={scheduleEvents} />
+        )}
+
+        {/* Overview Tab (Lessons & Homeworks) */}
+        {activeTab === 'overview' && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* 1. Upcoming & Completed Lessons */}
+            <div className="rounded-3xl p-6 glass-panel shadow-xl space-y-4 flex flex-col justify-between">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-700/60">
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                    Ders Takvimim
+                  </h3>
+                  <span className="text-xs text-slate-500 dark:text-slate-400 font-mono">{lessons.length} Oturum</span>
+                </div>
+
 
               {lessons.length === 0 ? (
                 <div className="py-12 text-center text-slate-500 dark:text-slate-400 text-xs italic">
@@ -487,92 +539,7 @@ export default function StudentPortalPage() {
             </div>
           </div>
 
-          {/* 2. Akıllı Kitaplığım (Smart Bookshelf & Gemini Vision Scan) */}
-          <div className="rounded-3xl p-6 glass-panel shadow-xl space-y-4 flex flex-col justify-between">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-700/60">
-                <div className="flex items-center gap-2">
-                  <Library className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                  <h3 className="text-base font-bold text-slate-900 dark:text-white">Kitaplığım & Kaynaklar</h3>
-                </div>
-                <span className="text-xs text-slate-500 dark:text-slate-400 font-mono">{books.length} Kaynak</span>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex items-center gap-2">
-                <label className="flex-1 py-2 px-3 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-semibold text-xs transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer">
-                  <Camera className="w-4 h-4" />
-                  <span>{isScanning ? 'Taranıyor...' : 'Fotoğraftan Tara'}</span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    disabled={isScanning}
-                    onChange={handleScanBook}
-                    className="hidden"
-                  />
-                </label>
-
-                <button
-                  type="button"
-                  onClick={() => setIsBookModalOpen(true)}
-                  className="py-2 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-semibold text-xs transition-all flex items-center gap-1 border border-slate-200 dark:border-slate-700"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>Manuel Ekle</span>
-                </button>
-              </div>
-
-              {books.length === 0 ? (
-                <div className="py-10 text-center space-y-2 text-slate-500 dark:text-slate-400">
-                  <BookMarked className="w-8 h-8 mx-auto text-amber-500/60" />
-                  <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">Kitaplığınıza henüz kaynak eklenmedi</p>
-                  <p className="text-[11px]">Kitap kapağını fotoğraflayarak veya manuel ekleyerek öğretmeninize kaynaklarınızı gösterin.</p>
-                </div>
-              ) : (
-                <div className="space-y-3 max-h-[460px] overflow-y-auto pr-1">
-                  {books.map((b) => (
-                    <div
-                      key={b.id}
-                      className="p-3.5 rounded-2xl bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800/80 shadow-sm space-y-2 group"
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <h4 className="text-xs font-bold text-slate-900 dark:text-white leading-snug">{b.title}</h4>
-                          <span className="text-[10px] text-amber-700 dark:text-amber-400 font-mono block mt-0.5">
-                            {b.publisher} • {b.subject}
-                          </span>
-                        </div>
-                        <button
-                          onClick={() => handleDeleteBook(b.id)}
-                          className="text-slate-400 hover:text-rose-500 p-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
-                          title="Sil"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-
-                      {b.topics && b.topics.length > 0 && (
-                        <div className="flex flex-wrap gap-1 pt-1 border-t border-slate-100 dark:border-slate-800">
-                          {b.topics.slice(0, 3).map((t, idx) => (
-                            <span key={idx} className="text-[9px] px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
-                              {t}
-                            </span>
-                          ))}
-                          {b.topics.length > 3 && (
-                            <span className="text-[9px] px-1.5 py-0.5 rounded-full text-slate-400 font-mono">
-                              +{b.topics.length - 3} konu
-                            </span>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* 3. Homeworks & Solution Upload */}
+          {/* 2. Homeworks & Solution Upload */}
           <div className="rounded-3xl p-6 glass-panel shadow-xl space-y-4 flex flex-col justify-between">
             <div className="space-y-4">
               <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-700/60">
@@ -656,7 +623,97 @@ export default function StudentPortalPage() {
             </div>
           </div>
         </div>
+        )}
+
+        {/* Library Tab (Bookshelf & Gemini Vision Scan) */}
+        {activeTab === 'library' && (
+          <div className="rounded-3xl p-6 sm:p-7 glass-panel shadow-xl space-y-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-700/60">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                  <Library className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-black text-slate-900 dark:text-white">Akıllı Kitaplığım & Kaynaklar</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Öğretmeninizin takip edebilmesi için kullandığınız ders kitaplarını ve soru bankalarını ekleyin.
+                  </p>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center gap-2.5 w-full sm:w-auto">
+                <label className="flex-1 sm:flex-none py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-bold text-xs transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer hover:scale-105 active:scale-95">
+                  <Camera className="w-4 h-4" />
+                  <span>{isScanning ? 'Taranıyor...' : 'Kamera / Fotoğraf ile Tara'}</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    disabled={isScanning}
+                    onChange={handleScanBook}
+                    className="hidden"
+                  />
+                </label>
+
+                <button
+                  type="button"
+                  onClick={() => setIsBookModalOpen(true)}
+                  className="py-2.5 px-4 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs transition-all flex items-center gap-1.5 border border-slate-200 dark:border-slate-700"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Manuel Kitap Ekle</span>
+                </button>
+              </div>
+            </div>
+
+            {books.length === 0 ? (
+              <div className="py-16 text-center space-y-3 text-slate-500 dark:text-slate-400">
+                <BookMarked className="w-12 h-12 mx-auto text-amber-500/50" />
+                <p className="text-sm font-bold text-slate-800 dark:text-slate-200">Kitaplığınıza henüz kaynak eklenmedi</p>
+                <p className="text-xs max-w-md mx-auto">
+                  Kitap kapağını fotoğraflayarak veya manuel ekleyerek öğretmeninize kaynaklarınızı gösterin.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {books.map((b) => (
+                  <div
+                    key={b.id}
+                    className="p-4 rounded-2xl bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 shadow-sm space-y-2.5 group hover:border-amber-500/30 transition-all"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <h4 className="text-sm font-bold text-slate-900 dark:text-white leading-snug">{b.title}</h4>
+                        <span className="text-xs text-amber-700 dark:text-amber-400 font-mono block mt-1">
+                          {b.publisher} • {b.subject}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => handleDeleteBook(b.id)}
+                        className="text-slate-400 hover:text-rose-500 p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                        title="Sil"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    {b.topics && b.topics.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 pt-2 border-t border-slate-100 dark:border-slate-800">
+                        {b.topics.map((t, idx) => (
+                          <span key={idx} className="text-[10px] px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-medium">
+                            {t}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </main>
+
 
       {/* Manual Book Add Modal */}
       {isBookModalOpen && (
