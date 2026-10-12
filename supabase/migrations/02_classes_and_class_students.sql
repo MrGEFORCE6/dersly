@@ -44,7 +44,14 @@ drop policy if exists "Öğretmenler kendi sınıflarını yönetebilir" on publ
 create policy "Öğretmenler kendi sınıflarını yönetebilir"
     on public.classes for all
     to authenticated
-    using (auth.uid() = teacher_id);
+    using (
+        auth.uid() = teacher_id and
+        exists (select 1 from public.profiles p where p.id = auth.uid() and p.role = 'teacher')
+    )
+    with check (
+        auth.uid() = teacher_id and
+        exists (select 1 from public.profiles p where p.id = auth.uid() and p.role = 'teacher')
+    );
 
 drop policy if exists "Öğrenciler kayıtlı oldukları sınıfları görebilir" on public.classes;
 create policy "Öğrenciler kayıtlı oldukları sınıfları görebilir"
@@ -69,6 +76,12 @@ create policy "Öğretmenler sınıflarına öğrenci ekleyebilir ve yönetebili
             select 1 from public.classes c
             where c.id = public.class_students.class_id and c.teacher_id = auth.uid()
         )
+    )
+    with check (
+        exists (
+            select 1 from public.classes c
+            where c.id = public.class_students.class_id and c.teacher_id = auth.uid()
+        )
     );
 
 drop policy if exists "Öğrenciler kendi sınıf kayıtlarını görüntüleyebilir" on public.class_students;
@@ -76,3 +89,4 @@ create policy "Öğrenciler kendi sınıf kayıtlarını görüntüleyebilir"
     on public.class_students for select
     to authenticated
     using (auth.uid() = student_id);
+

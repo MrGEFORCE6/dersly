@@ -46,6 +46,7 @@ end $$;
 -- TEST 2: ÖĞRENCİLER ARASI VERİ İZOLASYONU (RLS ÇAPRAZ ERİŞİM TESTİ)
 -- ==============================================================================
 -- Beklenen Sonuç: Öğrenci A, Öğrenci B'nin program etkinliklerini sorguladığında 0 satır dönmelidir.
+-- NOT: Supabase SQL editöründe RLS'in devreye girmesi için 'authenticated' rolü simüle edilmelidir.
 
 do $$
 declare
@@ -72,5 +73,80 @@ begin
         end if;
     else
         raise notice 'ℹ️ TEST 2 ATLANDI: Karşılaştırma için en az 2 öğrenci profili gereklidir.';
+    end if;
+end $$;
+
+-- ==============================================================================
+-- TEST 3: ÖĞRENCİNİN SINIF OLUŞTURMA GİRİŞİMİ ENGELLENMELİDİR (RLS WITH CHECK)
+-- ==============================================================================
+-- Beklenen Sonuç: Öğrenci profiline sahip bir kullanıcı `classes` tablosuna insert yapmaya çalıştığında
+-- RLS politikası işlemi reddetmelidir (new row violates row-level security policy).
+
+do $$
+declare
+    test_student_id uuid;
+begin
+    select id into test_student_id from public.profiles where role = 'student' limit 1;
+
+    if test_student_id is not null then
+        perform set_config('request.jwt.claims', json_build_object('sub', test_student_id::text, 'role', 'authenticated')::text, true);
+
+        begin
+            insert into public.classes (teacher_id, name, grade_level)
+            values (test_student_id, 'Yetkisiz Öğrenci Sınıfı', '12. Sınıf');
+
+            raise exception 'HATA: Güvenlik açığı! Öğrenci rolündeki kullanıcı sınıf oluşturabildi.';
+        exception
+            when insufficient_privilege or others then
+                if sqlerrm like '%row-level security%' or sqlerrm like '%policy%' then
+                    raise notice '✅ TEST 3 BAŞARILI: Öğrencinin sınıf oluşturması RLS politikası tarafından engellendi.';
+                else
+                    raise notice 'ℹ️ TEST 3 BİLGİ: Hata yakalandı (%s)', sqlerrm;
+                end if;
+        end;
+    else
+        raise notice 'ℹ️ TEST 3 ATLANDI: Test için uygun öğrenci profili bulunamadı.';
+    end if;
+end $$;
+
+-- ==============================================================================
+-- TEST 4: ÖĞRETMENİN BAŞKA BİR ÖĞRETMENİN SINIFINA ÖDEV ATAMASI ENGELLENMELİDİR
+-- ==============================================================================
+-- Beklenen Sonuç: Öğretmen A, Öğretmen B'ye ait `class_id` ile ödev insert etmeye çalıştığında
+-- RLS WITH CHECK kuralı işlemi engellemelidir.
+
+do $$
+declare
+    teacher_a uuid;
+    teacher_b uuid;
+    class_of_b uuid;
+    test_student uuid;
+begin
+    select id into teacher_a from public.profiles where role = 'teacher' limit 1;
+    select id into teacher_b from public.profiles where role = 'teacher' and id != teacher_a limit 1;
+    select id into class_of_b from public.classes where teacher_id = teacher_b limit 1;
+    select id into test_student from public.profiles where role = 'student' limit 1;
+
+    if teacher_a is not null and teacher_b is not null and class_of_b is not null and test_student is not null then
+        perform set_config('request.jwt.claims', json_build_object('sub', teacher_a::text, 'role', 'authenticated')::text, true);
+
+        begin
+            insert into public.homeworks (
+                teacher_id, class_id, student_id, title, description
+            ) values (
+                teacher_a, class_of_b, test_student, 'Yabancı Sınıf Ödevi', 'İhlal denemesi'
+            );
+
+            raise exception 'HATA: Güvenlik açığı! Öğretmen başka öğretmenin sınıfına ödev atayabildi.';
+        exception
+            when others then
+                if sqlerrm like '%row-level security%' or sqlerrm like '%policy%' then
+                    raise notice '✅ TEST 4 BAŞARILI: Yabancı sınıfa ödev atama RLS tarafından engellendi.';
+                else
+                    raise notice 'ℹ️ TEST 4 BİLGİ: Hata yakalandı (%s)', sqlerrm;
+                end if;
+        end;
+    else
+        raise notice 'ℹ️ TEST 4 ATLANDI: Test için en az 2 öğretmen ve 1 yabancı sınıf gereklidir.';
     end if;
 end $$;

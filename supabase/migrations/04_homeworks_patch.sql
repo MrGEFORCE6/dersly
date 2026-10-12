@@ -63,33 +63,38 @@ create policy "İlgili öğrenci veya öğretmen görüntüleyebilir"
         )
     );
 
--- INSERT Politikası (Öğretmenler)
+-- INSERT Politikası (Yalnızca Yetkili Öğretmenler)
 drop policy if exists "Öğretmenler ödev ekleyebilir" on public.homeworks;
 create policy "Öğretmenler ödev ekleyebilir"
     on public.homeworks for insert
     to authenticated
     with check (
-        auth.uid() = teacher_id or
+        -- 1. İstek yapan kullanıcı kesinlikle öğretmen olmalı ve teacher_id kendisi olmalı
+        auth.uid() = teacher_id and
         exists (
-            select 1 from public.lessons l 
-            where l.id = public.homeworks.lesson_id and l.teacher_id = auth.uid()
-        ) or exists (
-            select 1 from public.classes c
-            where c.id = public.homeworks.class_id and c.teacher_id = auth.uid()
-        ) or exists (
             select 1 from public.profiles p
             where p.id = auth.uid() and p.role = 'teacher'
-        )
+        ) and
+        -- 2. Eğer bir sınıfa ödev atanıyorsa, sınıfın sahibi bu öğretmen olmalı
+        (class_id is null or exists (
+            select 1 from public.classes c
+            where c.id = public.homeworks.class_id and c.teacher_id = auth.uid()
+        )) and
+        -- 3. Eğer birebir derse ödev bağlanıyorsa, dersin öğretmeni bu öğretmen olmalı
+        (lesson_id is null or exists (
+            select 1 from public.lessons l 
+            where l.id = public.homeworks.lesson_id and l.teacher_id = auth.uid()
+        ))
     );
 
--- UPDATE Politikası (Öğrenci Teslim veya Öğretmen Değerlendirme)
+-- UPDATE Politikası (Öğrenci Teslim veya İlgili Öğretmen Değerlendirme)
 drop policy if exists "Öğrenci veya öğretmen ödev güncelleyebilir" on public.homeworks;
 create policy "Öğrenci veya öğretmen ödev güncelleyebilir"
     on public.homeworks for update
     to authenticated
     using (
         auth.uid() = student_id or 
-        auth.uid() = teacher_id or
+        (auth.uid() = teacher_id and exists (select 1 from public.profiles p where p.id = auth.uid() and p.role = 'teacher')) or
         exists (
             select 1 from public.lessons l 
             where l.id = public.homeworks.lesson_id and l.teacher_id = auth.uid()

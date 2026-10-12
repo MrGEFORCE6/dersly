@@ -41,9 +41,9 @@ export interface HeuristicPlanOptions {
 
 export interface StudentExportItem {
   profile?: {
-    full_name?: string;
-    username?: string;
-    phone?: string;
+    full_name?: string | null;
+    username?: string | null;
+    phone?: string | null;
   };
   name?: string;
   stats?: {

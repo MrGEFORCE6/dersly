@@ -13,7 +13,7 @@ declare
     current_user_role text;
 begin
     -- İstek yapan kullanıcının rolünü profiller tablosundan al
-    select role into current_user_role from public.profiles where id = auth.uid();
+    select role::text into current_user_role from public.profiles where id = auth.uid();
     
     -- Eğer istek yapan kullanıcı bir öğrenciyse veya ödevin sahibi olan öğrenciyse:
     if current_user_role = 'student' or auth.uid() = old.student_id then
@@ -32,9 +32,28 @@ begin
             raise exception 'GÜVENLİK İHLALİ: Öğrenciler inceleme tarihini değiştiremez.';
         end if;
 
-        -- 4. Durum 'reviewed' veya 'revision_requested' yapılamaz (sadece öğretmen yapabilir)
+        -- 4. Öğretmen tarafından belirlenen alanlar (başlık, açıklama, son tarih, öğretmen, sınıf vb.) tahrif edilemez
+        if new.student_id is distinct from old.student_id or
+           new.teacher_id is distinct from old.teacher_id or
+           new.class_id is distinct from old.class_id or
+           new.lesson_id is distinct from old.lesson_id or
+           new.title is distinct from old.title or
+           new.description is distinct from old.description or
+           new.due_date is distinct from old.due_date or
+           new.resource_url is distinct from old.resource_url or
+           new.estimated_minutes is distinct from old.estimated_minutes then
+            raise exception 'GÜVENLİK İHLALİ: Öğrenciler ödevin öğretmen tanımlı alanlarını (başlık, açıklama, teslim tarihi, sınıf vb.) değiştiremez.';
+        end if;
+
+        -- 5. Öğrenci durumu sadece 'submitted' yapabilir; 'reviewed' veya 'revision_requested' yapamaz
         if new.status in ('reviewed', 'revision_requested') and new.status is distinct from old.status then
             raise exception 'GÜVENLİK İHLALİ: Öğrenciler ödev inceleme durumunu değiştiremez.';
+        end if;
+
+        -- 6. Eğer ödev zaten incelenip onaylanmışsa (status = 'reviewed'),
+        -- öğretmen düzeltme istemediği sürece (revision_requested) öğrenci teslimi değiştiremez
+        if old.status = 'reviewed' and (new.status is distinct from old.status or new.file_url is distinct from old.file_url or new.submission_notes is distinct from old.submission_notes) then
+            raise exception 'GÜVENLİK İHLALİ: Değerlendirilmiş ödevler üzerinde öğrenci tarafından değişiklik yapılamaz.';
         end if;
     end if;
 
@@ -53,14 +72,46 @@ create trigger enforce_homework_update_permissions
 -- 2. SUPABASE STORAGE BUCKETLARI VE STORAGE RLS
 -- -------------------------------------------------------------
 
--- Bucket'ları yoksa ekle
-insert into storage.buckets (id, name, public)
-values ('homework-files', 'homework-files', true)
-on conflict (id) do update set public = true;
+-- Bucket'ları yoksa ekle (Dosya boyutu ve MIME tipi sınırlamaları ile)
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values (
+    'homework-files', 
+    'homework-files', 
+    true, 
+    20971520, -- 20 MB
+    array[
+        'application/pdf', 
+        'image/png', 
+        'image/jpeg', 
+        'image/webp', 
+        'application/msword', 
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ]
+)
+on conflict (id) do update set 
+    public = true,
+    file_size_limit = 20971520,
+    allowed_mime_types = array[
+        'application/pdf', 
+        'image/png', 
+        'image/jpeg', 
+        'image/webp', 
+        'application/msword', 
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ];
 
-insert into storage.buckets (id, name, public)
-values ('avatars', 'avatars', true)
-on conflict (id) do update set public = true;
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values (
+    'avatars', 
+    'avatars', 
+    true, 
+    5242880, -- 5 MB
+    array['image/png', 'image/jpeg', 'image/webp']
+)
+on conflict (id) do update set 
+    public = true,
+    file_size_limit = 5242880,
+    allowed_mime_types = array['image/png', 'image/jpeg', 'image/webp'];
 
 -- Storage RLS: Okuma (Public)
 drop policy if exists "Dosyalar herkese okunabilir" on storage.objects;

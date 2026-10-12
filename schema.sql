@@ -279,26 +279,70 @@ create index if not exists idx_teacher_students_student on public.teacher_studen
 -- ==============================================================================
 -- SUPABASE STORAGE BUCKETS (homework-files & avatars)
 -- ==============================================================================
-insert into storage.buckets (id, name, public)
-values ('homework-files', 'homework-files', true)
-on conflict (id) do update set public = true;
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values (
+    'homework-files', 
+    'homework-files', 
+    true, 
+    20971520, -- 20 MB
+    array[
+        'application/pdf', 
+        'image/png', 
+        'image/jpeg', 
+        'image/webp', 
+        'application/msword', 
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ]
+)
+on conflict (id) do update set 
+    public = true,
+    file_size_limit = 20971520,
+    allowed_mime_types = array[
+        'application/pdf', 
+        'image/png', 
+        'image/jpeg', 
+        'image/webp', 
+        'application/msword', 
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ];
 
-insert into storage.buckets (id, name, public)
-values ('avatars', 'avatars', true)
-on conflict (id) do update set public = true;
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values (
+    'avatars', 
+    'avatars', 
+    true, 
+    5242880, -- 5 MB
+    array['image/png', 'image/jpeg', 'image/webp']
+)
+on conflict (id) do update set 
+    public = true,
+    file_size_limit = 5242880,
+    allowed_mime_types = array['image/png', 'image/jpeg', 'image/webp'];
 
 -- Storage RLS Politikaları
+drop policy if exists "Dosyalar herkese okunabilir" on storage.objects;
 create policy "Dosyalar herkese okunabilir"
     on storage.objects for select
     using (bucket_id in ('homework-files', 'avatars'));
 
+drop policy if exists "Kullanıcılar dosya yükleyebilir" on storage.objects;
 create policy "Kullanıcılar dosya yükleyebilir"
     on storage.objects for insert
-    with check (bucket_id in ('homework-files', 'avatars'));
+    to authenticated
+    with check (
+        bucket_id in ('homework-files', 'avatars')
+        and (
+            (bucket_id = 'homework-files' and lower(storage.extension(name)) in ('pdf', 'png', 'jpg', 'jpeg', 'webp', 'doc', 'docx'))
+            or
+            (bucket_id = 'avatars' and lower(storage.extension(name)) in ('png', 'jpg', 'jpeg', 'webp'))
+        )
+    );
 
+drop policy if exists "Kullanıcılar kendi dosyalarını güncelleyebilir veya silebilir" on storage.objects;
 create policy "Kullanıcılar kendi dosyalarını güncelleyebilir veya silebilir"
-    on storage.objects for update
-    using (bucket_id in ('homework-files', 'avatars'));
+    on storage.objects for all
+    to authenticated
+    using (bucket_id in ('homework-files', 'avatars') and auth.uid() = owner);
 
 -- ==============================================================================
 -- ROW LEVEL SECURITY (RLS) POLİTİKALARI
@@ -342,11 +386,20 @@ create policy "Öğretmenler ve öğrenciler kendi derslerini güncelleyebilir"
     using (auth.uid() = teacher_id or auth.uid() = student_id);
 
 -- CLASSES RLS
+drop policy if exists "Öğretmenler kendi sınıflarını yönetebilir" on public.classes;
 create policy "Öğretmenler kendi sınıflarını yönetebilir"
     on public.classes for all
     to authenticated
-    using (auth.uid() = teacher_id);
+    using (
+        auth.uid() = teacher_id and
+        exists (select 1 from public.profiles p where p.id = auth.uid() and p.role = 'teacher')
+    )
+    with check (
+        auth.uid() = teacher_id and
+        exists (select 1 from public.profiles p where p.id = auth.uid() and p.role = 'teacher')
+    );
 
+drop policy if exists "Öğrenciler kayıtlı oldukları sınıfları görebilir" on public.classes;
 create policy "Öğrenciler kayıtlı oldukları sınıfları görebilir"
     on public.classes for select
     to authenticated
@@ -358,6 +411,7 @@ create policy "Öğrenciler kayıtlı oldukları sınıfları görebilir"
     );
 
 -- CLASS_STUDENTS RLS
+drop policy if exists "Öğretmenler sınıflarına öğrenci ekleyebilir ve yönetebilir" on public.class_students;
 create policy "Öğretmenler sınıflarına öğrenci ekleyebilir ve yönetebilir"
     on public.class_students for all
     to authenticated
@@ -366,14 +420,22 @@ create policy "Öğretmenler sınıflarına öğrenci ekleyebilir ve yönetebili
             select 1 from public.classes c
             where c.id = public.class_students.class_id and c.teacher_id = auth.uid()
         )
+    )
+    with check (
+        exists (
+            select 1 from public.classes c
+            where c.id = public.class_students.class_id and c.teacher_id = auth.uid()
+        )
     );
 
+drop policy if exists "Öğrenciler kendi sınıf kayıtlarını görüntüleyebilir" on public.class_students;
 create policy "Öğrenciler kendi sınıf kayıtlarını görüntüleyebilir"
     on public.class_students for select
     to authenticated
     using (auth.uid() = student_id);
 
 -- HOMEWORKS RLS
+drop policy if exists "İlgili öğrenci veya öğretmen görüntüleyebilir" on public.homeworks;
 create policy "İlgili öğrenci veya öğretmen görüntüleyebilir"
     on public.homeworks for select
     to authenticated
@@ -390,29 +452,33 @@ create policy "İlgili öğrenci veya öğretmen görüntüleyebilir"
         )
     );
 
+drop policy if exists "Öğretmenler ödev ekleyebilir" on public.homeworks;
 create policy "Öğretmenler ödev ekleyebilir"
     on public.homeworks for insert
     to authenticated
     with check (
-        auth.uid() = teacher_id or
+        auth.uid() = teacher_id and
         exists (
-            select 1 from public.lessons l 
-            where l.id = public.homeworks.lesson_id and l.teacher_id = auth.uid()
-        ) or exists (
-            select 1 from public.classes c
-            where c.id = public.homeworks.class_id and c.teacher_id = auth.uid()
-        ) or exists (
             select 1 from public.profiles p
             where p.id = auth.uid() and p.role = 'teacher'
-        )
+        ) and
+        (class_id is null or exists (
+            select 1 from public.classes c
+            where c.id = public.homeworks.class_id and c.teacher_id = auth.uid()
+        )) and
+        (lesson_id is null or exists (
+            select 1 from public.lessons l 
+            where l.id = public.homeworks.lesson_id and l.teacher_id = auth.uid()
+        ))
     );
 
+drop policy if exists "Öğrenci veya öğretmen ödev güncelleyebilir" on public.homeworks;
 create policy "Öğrenci veya öğretmen ödev güncelleyebilir"
     on public.homeworks for update
     to authenticated
     using (
         auth.uid() = student_id or 
-        auth.uid() = teacher_id or
+        (auth.uid() = teacher_id and exists (select 1 from public.profiles p where p.id = auth.uid() and p.role = 'teacher')) or
         exists (
             select 1 from public.lessons l 
             where l.id = public.homeworks.lesson_id and l.teacher_id = auth.uid()
@@ -423,6 +489,7 @@ create policy "Öğrenci veya öğretmen ödev güncelleyebilir"
         )
     );
 
+drop policy if exists "Öğretmenler ödev silebilir" on public.homeworks;
 create policy "Öğretmenler ödev silebilir"
     on public.homeworks for delete
     to authenticated
@@ -444,20 +511,34 @@ returns trigger as $$
 declare
     current_user_role text;
 begin
-    select role into current_user_role from public.profiles where id = auth.uid();
+    select role::text into current_user_role from public.profiles where id = auth.uid();
     
     if current_user_role = 'student' or auth.uid() = old.student_id then
         if new.score is distinct from old.score then
-            raise exception 'Güvenlik İhlali: Öğrenciler ödev puanını değiştiremez.';
+            raise exception 'GÜVENLİK İHLALİ: Öğrenciler ödev puanını değiştiremez veya kendilerine not veremez.';
         end if;
         if new.teacher_feedback is distinct from old.teacher_feedback then
-            raise exception 'Güvenlik İhlali: Öğrenciler öğretmen değerlendirme notunu değiştiremez.';
+            raise exception 'GÜVENLİK İHLALİ: Öğrenciler öğretmen değerlendirme notunu değiştiremez.';
         end if;
         if new.reviewed_at is distinct from old.reviewed_at then
-            raise exception 'Güvenlik İhlali: Öğrenciler inceleme tarihini değiştiremez.';
+            raise exception 'GÜVENLİK İHLALİ: Öğrenciler inceleme tarihini değiştiremez.';
+        end if;
+        if new.student_id is distinct from old.student_id or
+           new.teacher_id is distinct from old.teacher_id or
+           new.class_id is distinct from old.class_id or
+           new.lesson_id is distinct from old.lesson_id or
+           new.title is distinct from old.title or
+           new.description is distinct from old.description or
+           new.due_date is distinct from old.due_date or
+           new.resource_url is distinct from old.resource_url or
+           new.estimated_minutes is distinct from old.estimated_minutes then
+            raise exception 'GÜVENLİK İHLALİ: Öğrenciler ödevin öğretmen tanımlı alanlarını değiştiremez.';
         end if;
         if new.status in ('reviewed', 'revision_requested') and new.status is distinct from old.status then
-            raise exception 'Güvenlik İhlali: Öğrenciler inceleme durumunu değiştiremez.';
+            raise exception 'GÜVENLİK İHLALİ: Öğrenciler inceleme durumunu değiştiremez.';
+        end if;
+        if old.status = 'reviewed' and (new.status is distinct from old.status or new.file_url is distinct from old.file_url or new.submission_notes is distinct from old.submission_notes) then
+            raise exception 'GÜVENLİK İHLALİ: Değerlendirilmiş ödevler üzerinde öğrenci tarafından değişiklik yapılamaz.';
         end if;
     end if;
 
