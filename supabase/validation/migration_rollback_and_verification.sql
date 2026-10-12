@@ -54,25 +54,38 @@ drop policy if exists "Kullanıcılar güvenli dosya yükleyebilir" on storage.o
 drop policy if exists "Kullanıcılar kendi dosyalarını silebilir veya güncelleyebilir" on storage.objects;
 
 -- ROLLBACK 04: Homeworks Ek Sütunları ve Politikaları Geri Al
--- (Veri kaybını önlemek için sütunlar DROP edilmeden önce yedek alınmalıdır)
+-- ⚠️ UYARI: Eklenen sütunlar (teacher_id, title, score vb.) ve backfill verileri bilerek DROP edilmemiştir.
+-- Sütunları DROP etmek bu süreçte girilen tüm ödev puan ve açıklamalarının KALICI KAYBINA yol açar.
 drop policy if exists "İlgili öğrenci veya öğretmen görüntüleyebilir" on public.homeworks;
 drop policy if exists "Öğretmenler ödev ekleyebilir" on public.homeworks;
 drop policy if exists "Öğrenci veya öğretmen ödev güncelleyebilir" on public.homeworks;
 drop policy if exists "Öğretmenler ödev silebilir" on public.homeworks;
 
+-- 🛡️ KRİTİK GÜVENLİK ADIMI: Homeworks tablosunda RLS aktif olduğu için politikaların düşürülmesi
+-- tablonun tüm kullanıcılara KAPANMASINA (Deny-All) neden olur. Eski şemadaki temel politikalar yeniden kurulmalıdır:
+create policy "Öğrenciler kendi ödevlerini görüntüleyebilir"
+    on public.homeworks for select to authenticated
+    using (auth.uid() = student_id);
+
+create policy "Öğretmenler ders ödevlerini yönetebilir"
+    on public.homeworks for all to authenticated
+    using (exists (select 1 from public.lessons l where l.id = public.homeworks.lesson_id and l.teacher_id = auth.uid()));
+
 -- ROLLBACK 03: Schedule Events Tablosunu Kaldır
--- (Eğer bu aşamada yeni veri girilmediyse tablo kaldırılabilir)
+-- ⚠️ UYARI: Eğer canlı ortamda öğrenciler program oluşturduysa tabloyu silmek VERİ KAYBIDIR.
 drop policy if exists "Kullanıcılar kendi program etkinliklerini yönetebilir" on public.schedule_events;
 drop policy if exists "Öğretmenler bağlı öğrencilerinin programlarını görüntüleyebilir" on public.schedule_events;
--- drop table if exists public.schedule_events cascade; -- İsteğe bağlı
+-- drop table if exists public.schedule_events cascade; -- Yalnızca test ortamında veri yoksa açılabilir
 
 -- ROLLBACK 02: Classes ve Class Students Tablolarını Kaldır
+-- ⚠️ UYARI: Sınıf ve kayıt tablolarını silmek öğretmenlerin açtığı sınıfları ve öğrenci eşleşmelerini yok eder.
 drop policy if exists "Öğretmenler kendi sınıflarını yönetebilir" on public.classes;
 drop policy if exists "Öğrenciler kayıtlı oldukları sınıfları görebilir" on public.classes;
 drop policy if exists "Öğretmenler sınıflarına öğrenci ekleyebilir ve yönetebilir" on public.class_students;
 drop policy if exists "Öğrenciler kendi sınıf kayıtlarını görüntüleyebilir" on public.class_students;
--- drop table if exists public.class_students cascade; -- İsteğe bağlı
--- drop table if exists public.classes cascade; -- İsteğe bağlı
+-- drop table if exists public.class_students cascade; -- Yalnızca test ortamında veri yoksa açılabilir
+-- drop table if exists public.classes cascade; -- Yalnızca test ortamında veri yoksa açılabilir
 
--- ROLLBACK 01: Not: PostgreSQL'de ENUM değerleri (alter type add value) silinemez.
--- Mevcut enum yapısını bozmamak için Migration 01 geri alınmaz, zararsızdır.
+-- ROLLBACK 01: Geri Alınamayan İşlem (Irreversible Operation)
+-- ⚠️ TEKNİK KISIT: PostgreSQL çekirdeğinde ENUM değerleri ("alter type ... drop value") silinemez.
+-- 'revision_requested' değeri 'homework_status' enum tipinde kalacaktır. Bu durum mevcut eski verilere veya sisteme hiçbir zarar vermez.

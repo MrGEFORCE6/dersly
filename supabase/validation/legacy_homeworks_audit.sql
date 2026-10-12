@@ -13,8 +13,18 @@ select
     count(*) filter (where lesson_id is null) as lesson_id_eksik_sayisi,
     count(*) filter (where teacher_id is null) as teacher_id_eksik_sayisi,
     count(*) filter (where teacher_id is null and lesson_id is not null) as migration04_tarafindan_kurtarilacak_sayi,
-    count(*) filter (where teacher_id is null and lesson_id is null) as sahipsiz_kalacak_legacy_odev_sayisi
+    count(*) filter (where teacher_id is null and lesson_id is null and class_id is null) as sahipsiz_kalacak_legacy_odev_sayisi,
+    count(*) filter (where teacher_id is null and class_id is not null) as sinif_uzerinden_kurtarilabilecek_sayi,
+    count(*) filter (where teacher_id is null and lesson_id is null and status = 'submitted') as ogretmensiz_teslim_edilmis_riskli_odevler,
+    count(*) filter (where teacher_id is null and lesson_id is null and status = 'pending') as ogretmensiz_bekleyen_odevler
 from public.homeworks;
+
+-- 1.1. Profil Bütünlüğü Kontrolü (Foreign Key İhlali Var mı?)
+select 
+    count(*) as profil_kaydi_olmayan_yetim_ogrenci_odevleri
+from public.homeworks h
+left join public.profiles p on p.id = h.student_id
+where p.id is null;
 
 -- ------------------------------------------------------------------------------
 -- 2. SAHİPSİZ KALACAK ÖDEVLERİN ÖĞRENCİ VE ÖĞRETMEN BAĞLANTI DAĞILIMI
