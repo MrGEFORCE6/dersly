@@ -63,30 +63,22 @@ export async function GET(request: NextRequest) {
         const response = NextResponse.redirect(`${origin}${targetPath}`);
 
         // Set secure session indicator cookies
-        response.cookies.set('dersly_auth_token', user.id, {
+        const cookieOpts = {
           path: '/',
           httpOnly: false,
           secure: process.env.NODE_ENV === 'production',
-          sameSite: 'lax',
+          sameSite: 'lax' as const,
           maxAge: 60 * 60 * 24 * 7, // 7 days
-        });
+        };
 
-        response.cookies.set('dersly_user_role', resolvedRole, {
-          path: '/',
-          httpOnly: false,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'lax',
-          maxAge: 60 * 60 * 24 * 7,
-        });
+        response.cookies.set('dersly_auth_token', user.id, cookieOpts);
+        response.cookies.set('dersly_user_id', user.id, cookieOpts);
+        response.cookies.set('dersly_user_role', resolvedRole, cookieOpts);
 
-        // Backwards compatibility with legacy cookie name
-        response.cookies.set('derspompa_user_role', resolvedRole, {
-          path: '/',
-          httpOnly: false,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'lax',
-          maxAge: 60 * 60 * 24 * 7,
-        });
+        // Backwards compatibility with legacy cookie names
+        response.cookies.set('derspompa_auth_token', user.id, cookieOpts);
+        response.cookies.set('derspompa_user_id', user.id, cookieOpts);
+        response.cookies.set('derspompa_user_role', resolvedRole, cookieOpts);
 
         return response;
       }

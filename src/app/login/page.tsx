@@ -87,7 +87,13 @@ function LoginForm() {
           },
         });
         if (error) {
-          setErrorMessage(`Google kimlik doğrulaması başlatılamadı: ${error.message}`);
+          if (error.message.toLowerCase().includes('provider is not enabled') || error.message.toLowerCase().includes('unsupported provider')) {
+            setErrorMessage(
+              'Google Girişi için Supabase Dashboard > Authentication > Providers > Google alanından Google Client ID & Secret eklenmelidir. Şimdilik e-posta veya demo ile giriş yapabilirsiniz.'
+            );
+          } else {
+            setErrorMessage(`Google kimlik doğrulaması başlatılamadı: ${error.message}`);
+          }
           setIsLoading(false);
         }
       } catch (err: unknown) {

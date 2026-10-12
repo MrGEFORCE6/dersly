@@ -30,6 +30,7 @@ import { StudentManagement } from '@/components/dashboard/StudentManagement';
 import { HomeworkModule } from '@/components/dashboard/HomeworkModule';
 import { BillingSection } from '@/components/dashboard/BillingSection';
 import { AddStudentInviteModal } from '@/components/dashboard/AddStudentInviteModal';
+import { ClassManagement } from '@/components/dashboard/ClassManagement';
 import { Navbar } from '@/components/Navbar';
 import { 
   GraduationCap, 
@@ -44,11 +45,12 @@ import {
   Smartphone,
   Sparkles,
   Settings,
-  UserPlus
+  UserPlus,
+  School
 } from 'lucide-react';
 
 export default function DashboardPage() {
-  const [activeTab, setActiveTab] = useState<'calendar' | 'students' | 'homeworks' | 'billing'>('calendar');
+  const [activeTab, setActiveTab] = useState<'calendar' | 'classes' | 'students' | 'homeworks' | 'billing'>('calendar');
   const [isAddLessonOpen, setIsAddLessonOpen] = useState(false);
   const [isAddStudentOpen, setIsAddStudentOpen] = useState(false);
   const [selectedLessonForDetail, setSelectedLessonForDetail] = useState<Lesson | null>(null);
@@ -417,6 +419,7 @@ export default function DashboardPage() {
         <div className="flex border-b border-slate-200 dark:border-slate-800 gap-2 sm:gap-6 overflow-x-auto">
           {[
             { id: 'calendar', label: 'Ders Takvimi (Haftalık & Günlük)', icon: Calendar, badge: lessons.length },
+            { id: 'classes', label: 'Sınıflar & Gruplar', icon: School, badge: 'Sınıf' },
             { id: 'students', label: 'Öğrenci Yönetimi & Paketler', icon: Users, badge: students.length },
             { id: 'homeworks', label: 'Ödev Verme & Dosya Takibi', icon: BookOpen, badge: homeworks.length },
             { id: 'billing', label: 'Abonelik ve Fatura (Tarife)', icon: Receipt, badge: `${students.length} Öğr.` },
@@ -453,6 +456,10 @@ export default function DashboardPage() {
             onOpenAddLesson={() => setIsAddLessonOpen(true)}
             onSelectLesson={(lesson) => setSelectedLessonForDetail(lesson)}
           />
+        )}
+
+        {activeTab === 'classes' && (
+          <ClassManagement teacherId={teacherProfile.id} />
         )}
 
         {activeTab === 'students' && (

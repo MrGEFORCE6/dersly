@@ -22,7 +22,12 @@ import type {
   Like,
   Follow,
   TeacherStudent,
-  FeedType
+  FeedType,
+  Class,
+  ClassInsert,
+  ClassUpdate,
+  ClassStudent,
+  ClassStudentInsert
 } from '@/types/database.types';
 import { initialStudents, initialLessons, initialHomeworks, currentTeacher } from '@/data/mockData';
 
@@ -38,6 +43,8 @@ const STORAGE_KEYS = {
   LIKES: 'derspompa_likes_v3',
   FOLLOWS: 'derspompa_follows_v3',
   TEACHER_STUDENTS: 'derspompa_teacher_students_v3',
+  CLASSES: 'dersly_classes_v1',
+  CLASS_STUDENTS: 'dersly_class_students_v1',
 };
 
 // Initialize Local Storage with clean empty state (no hardcoded mock users)
@@ -1097,5 +1104,301 @@ export async function updateLessonVoiceAndNotes(
   }
 
   return updated;
+}
+
+// ==========================================
+// 10. CLASSES & CLASS_STUDENTS (Öğretmen Sınıfları & Toplu Yönetim)
+// ==========================================
+const initialSeedClasses: Class[] = [
+  {
+    id: 'cls-101',
+    teacher_id: 't-001',
+    name: '12-A YKS Sayısal Grubu',
+    grade_level: '12. Sınıf',
+    academic_year: '2026-2027',
+    description: 'Haftalık 15 saat yoğun soru çözümü ve TYT/AYT matematik maratonu',
+    color: 'indigo',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+  {
+    id: 'cls-102',
+    teacher_id: 't-001',
+    name: 'Mezun Derece Kampı',
+    grade_level: 'Mezun',
+    academic_year: '2026-2027',
+    description: 'İlk 10.000 hedefli deneme sınavı analizleri ve konu eksik tamamlama',
+    color: 'emerald',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
+];
+
+const initialSeedClassStudents: ClassStudent[] = [
+  {
+    id: 'cs-001',
+    class_id: 'cls-101',
+    student_id: 's-001', // Zeynep Kaya
+    enrolled_at: new Date().toISOString(),
+  },
+];
+
+export async function fetchClasses(teacherId?: string): Promise<Class[]> {
+  initializeLocalStorage();
+  const supabase = createClient();
+
+  if (isRealSupabaseConfigured()) {
+    try {
+      let query = supabase.from('classes').select('*').order('created_at', { ascending: false });
+      if (teacherId) {
+        query = query.eq('teacher_id', teacherId);
+      }
+      const { data, error } = await query;
+      if (!error && data) {
+        return data as Class[];
+      }
+    } catch (e) {
+      console.warn('Supabase fetchClasses fallback:', e);
+    }
+  }
+
+  const local = getLocalData<Class>(STORAGE_KEYS.CLASSES, initialSeedClasses);
+  if (teacherId) {
+    return local.filter((c) => c.teacher_id === teacherId);
+  }
+  return local;
+}
+
+export async function createClass(newClass: ClassInsert): Promise<Class> {
+  initializeLocalStorage();
+  const supabase = createClient();
+  const toSave: Class = {
+    id: newClass.id || `cls-${Date.now()}`,
+    teacher_id: newClass.teacher_id,
+    name: newClass.name,
+    grade_level: newClass.grade_level || '12. Sınıf',
+    academic_year: newClass.academic_year || '2026-2027',
+    description: newClass.description || null,
+    color: newClass.color || 'indigo',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  };
+
+  if (isRealSupabaseConfigured()) {
+    try {
+      const { data, error } = await (supabase
+        .from('classes') as any)
+        .insert(toSave)
+        .select()
+        .single();
+      if (!error && data) {
+        const local = getLocalData<Class>(STORAGE_KEYS.CLASSES, initialSeedClasses);
+        setLocalData(STORAGE_KEYS.CLASSES, [data as Class, ...local]);
+        return data as Class;
+      }
+    } catch (e) {
+      console.warn('Supabase createClass fallback:', e);
+    }
+  }
+
+  const local = getLocalData<Class>(STORAGE_KEYS.CLASSES, initialSeedClasses);
+  setLocalData(STORAGE_KEYS.CLASSES, [toSave, ...local]);
+  return toSave;
+}
+
+export async function updateClass(id: string, updates: ClassUpdate): Promise<Class | null> {
+  initializeLocalStorage();
+  const supabase = createClient();
+
+  if (isRealSupabaseConfigured()) {
+    try {
+      const { data, error } = await (supabase
+        .from('classes') as any)
+        .update({ ...updates, updated_at: new Date().toISOString() })
+        .eq('id', id)
+        .select()
+        .single();
+      if (!error && data) {
+        const local = getLocalData<Class>(STORAGE_KEYS.CLASSES, initialSeedClasses);
+        setLocalData(
+          STORAGE_KEYS.CLASSES,
+          local.map((c) => (c.id === id ? (data as Class) : c))
+        );
+        return data as Class;
+      }
+    } catch (e) {
+      console.warn('Supabase updateClass fallback:', e);
+    }
+  }
+
+  const local = getLocalData<Class>(STORAGE_KEYS.CLASSES, initialSeedClasses);
+  let updatedClass: Class | null = null;
+  const updatedList = local.map((c) => {
+    if (c.id === id) {
+      updatedClass = {
+        ...c,
+        ...updates,
+        updated_at: new Date().toISOString(),
+      } as Class;
+      return updatedClass;
+    }
+    return c;
+  });
+  setLocalData(STORAGE_KEYS.CLASSES, updatedList);
+  return updatedClass;
+}
+
+export async function deleteClass(id: string): Promise<boolean> {
+  initializeLocalStorage();
+  const supabase = createClient();
+
+  if (isRealSupabaseConfigured()) {
+    try {
+      await supabase.from('classes').delete().eq('id', id);
+    } catch (e) {
+      console.warn('Supabase deleteClass fallback:', e);
+    }
+  }
+
+  const local = getLocalData<Class>(STORAGE_KEYS.CLASSES, initialSeedClasses);
+  setLocalData(STORAGE_KEYS.CLASSES, local.filter((c) => c.id !== id));
+
+  // Also remove enrollments
+  const enrollments = getLocalData<ClassStudent>(STORAGE_KEYS.CLASS_STUDENTS, initialSeedClassStudents);
+  setLocalData(STORAGE_KEYS.CLASS_STUDENTS, enrollments.filter((cs) => cs.class_id !== id));
+  return true;
+}
+
+export async function fetchClassStudents(
+  classId: string
+): Promise<{ id: string; enrolled_at: string; student: Profile }[]> {
+  initializeLocalStorage();
+  const supabase = createClient();
+
+  if (isRealSupabaseConfigured()) {
+    try {
+      const { data, error } = await supabase
+        .from('class_students')
+        .select('id, enrolled_at, student:profiles(*)')
+        .eq('class_id', classId);
+      if (!error && data) {
+        return (data as any).map((d: any) => ({
+          id: d.id,
+          enrolled_at: d.enrolled_at,
+          student: d.student as Profile,
+        }));
+      }
+    } catch (e) {
+      console.warn('Supabase fetchClassStudents fallback:', e);
+    }
+  }
+
+  const enrollments = getLocalData<ClassStudent>(STORAGE_KEYS.CLASS_STUDENTS, initialSeedClassStudents);
+  const profiles = await fetchProfiles();
+  const matching = enrollments.filter((cs) => cs.class_id === classId);
+
+  return matching.map((cs) => {
+    const student = profiles.find((p) => p.id === cs.student_id) || {
+      id: cs.student_id,
+      full_name: 'Öğrenci',
+      username: 'ogrenci',
+      role: 'student',
+      bio: null,
+      phone: null,
+      avatar_url: null,
+      exam_stats: null,
+      privacy_settings: null,
+      theme_preference: null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+    return {
+      id: cs.id,
+      enrolled_at: cs.enrolled_at,
+      student,
+    };
+  });
+}
+
+export async function addStudentToClass(classId: string, studentId: string): Promise<ClassStudent> {
+  initializeLocalStorage();
+  const supabase = createClient();
+  const toSave: ClassStudent = {
+    id: `cs-${Date.now()}`,
+    class_id: classId,
+    student_id: studentId,
+    enrolled_at: new Date().toISOString(),
+  };
+
+  if (isRealSupabaseConfigured()) {
+    try {
+      const { data, error } = await (supabase
+        .from('class_students') as any)
+        .insert(toSave)
+        .select()
+        .single();
+      if (!error && data) {
+        const local = getLocalData<ClassStudent>(STORAGE_KEYS.CLASS_STUDENTS, initialSeedClassStudents);
+        setLocalData(STORAGE_KEYS.CLASS_STUDENTS, [...local, data as ClassStudent]);
+        return data as ClassStudent;
+      }
+    } catch (e) {
+      console.warn('Supabase addStudentToClass fallback:', e);
+    }
+  }
+
+  const local = getLocalData<ClassStudent>(STORAGE_KEYS.CLASS_STUDENTS, initialSeedClassStudents);
+  if (!local.some((cs) => cs.class_id === classId && cs.student_id === studentId)) {
+    setLocalData(STORAGE_KEYS.CLASS_STUDENTS, [...local, toSave]);
+  }
+  return toSave;
+}
+
+export async function removeStudentFromClass(classId: string, studentId: string): Promise<boolean> {
+  initializeLocalStorage();
+  const supabase = createClient();
+
+  if (isRealSupabaseConfigured()) {
+    try {
+      await supabase
+        .from('class_students')
+        .delete()
+        .eq('class_id', classId)
+        .eq('student_id', studentId);
+    } catch (e) {
+      console.warn('Supabase removeStudentFromClass fallback:', e);
+    }
+  }
+
+  const local = getLocalData<ClassStudent>(STORAGE_KEYS.CLASS_STUDENTS, initialSeedClassStudents);
+  setLocalData(
+    STORAGE_KEYS.CLASS_STUDENTS,
+    local.filter((cs) => !(cs.class_id === classId && cs.student_id === studentId))
+  );
+  return true;
+}
+
+export async function fetchStudentClasses(studentId: string): Promise<Class[]> {
+  initializeLocalStorage();
+  const supabase = createClient();
+
+  if (isRealSupabaseConfigured()) {
+    try {
+      const { data, error } = await supabase
+        .from('class_students')
+        .select('class:classes(*)')
+        .eq('student_id', studentId);
+      if (!error && data) {
+        return (data as any).map((d: any) => d.class as Class).filter(Boolean);
+      }
+    } catch (e) {
+      console.warn('Supabase fetchStudentClasses fallback:', e);
+    }
+  }
+
+  const enrollments = getLocalData<ClassStudent>(STORAGE_KEYS.CLASS_STUDENTS, initialSeedClassStudents);
+  const classes = await fetchClasses();
+  const studentEnrollments = enrollments.filter((cs) => cs.student_id === studentId);
+  return classes.filter((c) => studentEnrollments.some((se) => se.class_id === c.id));
 }
 

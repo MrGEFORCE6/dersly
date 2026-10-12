@@ -12,9 +12,10 @@ import {
   respondToReschedule,
   fetchBooks,
   createBook,
-  deleteBook
+  deleteBook,
+  fetchStudentClasses
 } from '@/lib/services/supabaseService';
-import type { Lesson, Homework, Profile, Book } from '@/types/database.types';
+import type { Lesson, Homework, Profile, Book, Class } from '@/types/database.types';
 import { ThemeSelector } from '@/components/theme/ThemeSelector';
 import {
   GraduationCap,
@@ -98,6 +99,8 @@ export default function StudentPortalPage() {
   const [chatInput, setChatInput] = useState('');
   const [isAiLoading, setIsAiLoading] = useState(false);
 
+  const [studentClasses, setStudentClasses] = useState<Class[]>([]);
+
   useEffect(() => {
     async function loadData() {
       const [dbProfiles, dbLessons, dbHws, dbBooks] = await Promise.all([
@@ -107,13 +110,18 @@ export default function StudentPortalPage() {
         fetchBooks(),
       ]);
 
+      let currentStudentId = 's-001';
       if (dbProfiles && dbProfiles.length > 0) {
         const student = dbProfiles.find((p) => p.role === 'student') || dbProfiles[0];
         setStudentProfile(student);
+        currentStudentId = student.id;
       }
       setLessons(dbLessons || []);
       setHomeworks(dbHws || []);
       setBooks(dbBooks || []);
+
+      const classes = await fetchStudentClasses(currentStudentId);
+      setStudentClasses(classes);
     }
     loadData();
   }, []);
@@ -349,6 +357,19 @@ export default function StudentPortalPage() {
             <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white">
               Hoş Geldin, {studentProfile.full_name} ✨
             </h1>
+            {studentClasses.length > 0 && (
+              <div className="flex flex-wrap items-center gap-2 pt-1">
+                {studentClasses.map((cls) => (
+                  <span
+                    key={cls.id}
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 text-xs font-bold"
+                  >
+                    <GraduationCap className="w-3.5 h-3.5" />
+                    Sınıfım: {cls.name} ({cls.grade_level || '12. Sınıf'})
+                  </span>
+                ))}
+              </div>
+            )}
             <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300">
               Kalan paket saatlerinizi, yaklaşan derslerinizi, kütüphanenizi ve ödevlerinizi canlı takip edin.
             </p>

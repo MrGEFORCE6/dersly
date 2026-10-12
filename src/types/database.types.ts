@@ -489,6 +489,83 @@ export interface Database {
         };
         Relationships: [];
       };
+      classes: {
+        Row: {
+          id: string;
+          teacher_id: string;
+          name: string;
+          grade_level: string | null;
+          academic_year: string | null;
+          description: string | null;
+          color: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          teacher_id: string;
+          name: string;
+          grade_level?: string | null;
+          academic_year?: string | null;
+          description?: string | null;
+          color?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          teacher_id?: string;
+          name?: string;
+          grade_level?: string | null;
+          academic_year?: string | null;
+          description?: string | null;
+          color?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "classes_teacher_id_fkey";
+            columns: ["teacher_id"];
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
+      class_students: {
+        Row: {
+          id: string;
+          class_id: string;
+          student_id: string;
+          enrolled_at: string;
+        };
+        Insert: {
+          id?: string;
+          class_id: string;
+          student_id: string;
+          enrolled_at?: string;
+        };
+        Update: {
+          id?: string;
+          class_id?: string;
+          student_id?: string;
+          enrolled_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "class_students_class_id_fkey";
+            columns: ["class_id"];
+            referencedRelation: "classes";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "class_students_student_id_fkey";
+            columns: ["student_id"];
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -534,6 +611,13 @@ export type BookUpdate = Database['public']['Tables']['books']['Update'];
 
 export type TeacherStudent = Database['public']['Tables']['teacher_students']['Row'];
 export type TeacherStudentInsert = Database['public']['Tables']['teacher_students']['Insert'];
+
+export type Class = Database['public']['Tables']['classes']['Row'];
+export type ClassInsert = Database['public']['Tables']['classes']['Insert'];
+export type ClassUpdate = Database['public']['Tables']['classes']['Update'];
+
+export type ClassStudent = Database['public']['Tables']['class_students']['Row'];
+export type ClassStudentInsert = Database['public']['Tables']['class_students']['Insert'];
 
 export type Post = Database['public']['Tables']['posts']['Row'];
 export type PostInsert = Database['public']['Tables']['posts']['Insert'];
