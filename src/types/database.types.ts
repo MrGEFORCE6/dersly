@@ -246,6 +246,18 @@ export interface Database {
             columns: ["student_id"];
             referencedRelation: "profiles";
             referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "homeworks_teacher_id_fkey";
+            columns: ["teacher_id"];
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "homeworks_class_id_fkey";
+            columns: ["class_id"];
+            referencedRelation: "classes";
+            referencedColumns: ["id"];
           }
         ];
       };

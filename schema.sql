@@ -1,5 +1,5 @@
 -- ==============================================================================
--- DERS POMPA - SUPABASE POSTGRESQL VERİTABANI ŞEMASI (schema.sql)
+-- DERS POMPA / DERSLY - SUPABASE POSTGRESQL VERİTABANI ŞEMASI (schema.sql)
 -- ==============================================================================
 
 -- 1. Gerekli Eklentiler (Extensions)
@@ -7,7 +7,7 @@ create extension if not exists "uuid-ossp";
 
 -- 2. Özel Tipler / ENUM Tanımlamaları
 do $$ begin
-    create type user_role as enum ('teacher', 'student', 'parent');
+    create type user_role as enum ('teacher', 'student');
 exception
     when duplicate_object then null;
 end $$;
@@ -23,6 +23,8 @@ do $$ begin
 exception
     when duplicate_object then null;
 end $$;
+-- Mevcut canlı veritabanında 'revision_requested' enum değeri eksikse güvenle ekle
+alter type homework_status add value if not exists 'revision_requested';
 
 do $$ begin
     create type payment_status as enum ('pending', 'partially_paid', 'completed', 'cancelled');
@@ -43,7 +45,7 @@ $$ language plpgsql;
 -- TABLOLAR
 -- ==============================================================================
 
--- 1. PROFILES (Kullanıcı Profilleri, Instagram Tarzı Sosyal ve Net İstatistikleri)
+-- 1. PROFILES (Kullanıcı Profilleri, İstatistikleri ve Tercihleri)
 create table if not exists public.profiles (
     id uuid primary key references auth.users(id) on delete cascade,
     full_name text not null,
@@ -73,14 +75,13 @@ create table if not exists public.profiles (
 create index if not exists idx_profiles_username on public.profiles(username);
 create index if not exists idx_profiles_role on public.profiles(role);
 
--- Profiles Updated_at Tetikleyicisi
 drop trigger if exists set_profiles_updated_at on public.profiles;
 create trigger set_profiles_updated_at
     before update on public.profiles
     for each row
     execute function update_updated_at_column();
 
--- 2. LESSONS (Dersler / Randevular)
+-- 2. LESSONS (Özel Dersler / Birebir Randevular)
 create table if not exists public.lessons (
     id uuid primary key default gen_random_uuid(),
     teacher_id uuid not null references public.profiles(id) on delete cascade,
@@ -92,6 +93,8 @@ create table if not exists public.lessons (
     notes text,
     required_book text,
     reschedule_request jsonb,
+    audio_note_url text,
+    digital_notes_url text,
     created_at timestamptz default now() not null,
     updated_at timestamptz default now() not null,
     
@@ -103,14 +106,45 @@ create index if not exists idx_lessons_student_id on public.lessons(student_id);
 create index if not exists idx_lessons_start_time on public.lessons(start_time);
 create index if not exists idx_lessons_status on public.lessons(status);
 
--- Lessons Updated_at Tetikleyicisi
 drop trigger if exists set_lessons_updated_at on public.lessons;
 create trigger set_lessons_updated_at
     before update on public.lessons
     for each row
     execute function update_updated_at_column();
 
--- 3. HOMEWORKS (Gelişmiş Ödevler ve Materyal Takibi)
+-- 3. CLASSES (Öğretmen Sınıfları) & CLASS_STUDENTS (Sınıf-Öğrenci Eşleşmesi)
+create table if not exists public.classes (
+    id uuid primary key default gen_random_uuid(),
+    teacher_id uuid not null references public.profiles(id) on delete cascade,
+    name text not null,
+    grade_level text default '12. Sınıf',
+    academic_year text default '2026-2027',
+    description text,
+    color text default 'indigo',
+    created_at timestamptz default now() not null,
+    updated_at timestamptz default now() not null
+);
+
+create index if not exists idx_classes_teacher_id on public.classes(teacher_id);
+
+drop trigger if exists set_classes_updated_at on public.classes;
+create trigger set_classes_updated_at
+    before update on public.classes
+    for each row
+    execute function update_updated_at_column();
+
+create table if not exists public.class_students (
+    id uuid primary key default gen_random_uuid(),
+    class_id uuid not null references public.classes(id) on delete cascade,
+    student_id uuid not null references public.profiles(id) on delete cascade,
+    enrolled_at timestamptz default now() not null,
+    unique(class_id, student_id)
+);
+
+create index if not exists idx_class_students_class_id on public.class_students(class_id);
+create index if not exists idx_class_students_student_id on public.class_students(student_id);
+
+-- 4. HOMEWORKS (Gelişmiş Ödevler, Sınıf Görevleri & Materyal Takibi)
 create table if not exists public.homeworks (
     id uuid primary key default gen_random_uuid(),
     lesson_id uuid references public.lessons(id) on delete set null,
@@ -139,15 +173,13 @@ create index if not exists idx_homeworks_teacher_id on public.homeworks(teacher_
 create index if not exists idx_homeworks_class_id on public.homeworks(class_id);
 create index if not exists idx_homeworks_status on public.homeworks(status);
 
-
--- Homeworks Updated_at Tetikleyicisi
 drop trigger if exists set_homeworks_updated_at on public.homeworks;
 create trigger set_homeworks_updated_at
     before update on public.homeworks
     for each row
     execute function update_updated_at_column();
 
--- 4. PAYMENTS (Ödemeler & Ders Paketleri)
+-- 5. PAYMENTS (Ödemeler & Ders Paketleri)
 create table if not exists public.payments (
     id uuid primary key default gen_random_uuid(),
     student_id uuid not null references public.profiles(id) on delete cascade,
@@ -164,12 +196,85 @@ create index if not exists idx_payments_student_id on public.payments(student_id
 create index if not exists idx_payments_teacher_id on public.payments(teacher_id);
 create index if not exists idx_payments_status on public.payments(status);
 
--- Payments Updated_at Tetikleyicisi
 drop trigger if exists set_payments_updated_at on public.payments;
 create trigger set_payments_updated_at
     before update on public.payments
     for each row
     execute function update_updated_at_column();
+
+-- 6. SCHEDULE_EVENTS (Akıllı Ders Programı, Okul Dersleri & Kişisel Çalışma Planı)
+create table if not exists public.schedule_events (
+    id uuid primary key default gen_random_uuid(),
+    user_id uuid not null references public.profiles(id) on delete cascade,
+    title text not null,
+    subject text not null,
+    event_type text not null default 'school', -- 'school' | 'private_lesson' | 'personal_study' | 'review' | 'exam'
+    day_of_week int not null check (day_of_week between 0 and 6), -- 0=Pazartesi, ..., 6=Pazar
+    start_time text not null, -- '09:00'
+    end_time text not null, -- '09:45'
+    specific_date text, -- '2026-10-15' opsiyonel tek seferlik tarih
+    location_or_link text,
+    color text default 'indigo',
+    notes text,
+    is_completed boolean default false,
+    created_at timestamptz default now() not null,
+    updated_at timestamptz default now() not null,
+
+    constraint check_event_times check (end_time > start_time)
+);
+
+create index if not exists idx_schedule_events_user_id on public.schedule_events(user_id);
+create index if not exists idx_schedule_events_day on public.schedule_events(day_of_week);
+create index if not exists idx_schedule_events_type on public.schedule_events(event_type);
+
+drop trigger if exists set_schedule_events_updated_at on public.schedule_events;
+create trigger set_schedule_events_updated_at
+    before update on public.schedule_events
+    for each row
+    execute function update_updated_at_column();
+
+-- 7. MESSAGES (Öğrenciler ve Eğitmenler Arası Canlı Mesajlaşma)
+create table if not exists public.messages (
+    id uuid primary key default gen_random_uuid(),
+    sender_id uuid not null references public.profiles(id) on delete cascade,
+    receiver_id uuid not null references public.profiles(id) on delete cascade,
+    content text not null,
+    is_read boolean default false not null,
+    created_at timestamptz default now() not null
+);
+
+create index if not exists idx_messages_sender_id on public.messages(sender_id);
+create index if not exists idx_messages_receiver_id on public.messages(receiver_id);
+create index if not exists idx_messages_created_at on public.messages(created_at);
+
+-- 8. BOOKS (Öğrenci Akıllı Kitaplığı & Kaynaklar)
+create table if not exists public.books (
+    id uuid primary key default gen_random_uuid(),
+    student_id uuid not null references public.profiles(id) on delete cascade,
+    title text not null,
+    publisher text,
+    subject text,
+    topics text[],
+    cover_image_url text,
+    created_at timestamptz default now() not null,
+    updated_at timestamptz default now() not null
+);
+
+create index if not exists idx_books_student_id on public.books(student_id);
+
+-- 9. TEACHER_STUDENTS (Hoca-Öğrenci Doğrudan Eşleşme Portföyü)
+create table if not exists public.teacher_students (
+    id uuid primary key default gen_random_uuid(),
+    teacher_id uuid not null references public.profiles(id) on delete cascade,
+    student_id uuid not null references public.profiles(id) on delete cascade,
+    status text default 'active' not null,
+    invite_code text,
+    created_at timestamptz default now() not null,
+    unique(teacher_id, student_id)
+);
+
+create index if not exists idx_teacher_students_teacher on public.teacher_students(teacher_id);
+create index if not exists idx_teacher_students_student on public.teacher_students(student_id);
 
 -- ==============================================================================
 -- SUPABASE STORAGE BUCKETS (homework-files & avatars)
@@ -201,8 +306,14 @@ create policy "Kullanıcılar kendi dosyalarını güncelleyebilir veya silebili
 
 alter table public.profiles enable row level security;
 alter table public.lessons enable row level security;
+alter table public.classes enable row level security;
+alter table public.class_students enable row level security;
 alter table public.homeworks enable row level security;
 alter table public.payments enable row level security;
+alter table public.schedule_events enable row level security;
+alter table public.messages enable row level security;
+alter table public.books enable row level security;
+alter table public.teacher_students enable row level security;
 
 -- PROFILES RLS
 create policy "Profiller herkese okunabilir"
@@ -230,15 +341,52 @@ create policy "Öğretmenler ve öğrenciler kendi derslerini güncelleyebilir"
     to authenticated
     using (auth.uid() = teacher_id or auth.uid() = student_id);
 
+-- CLASSES RLS
+create policy "Öğretmenler kendi sınıflarını yönetebilir"
+    on public.classes for all
+    to authenticated
+    using (auth.uid() = teacher_id);
+
+create policy "Öğrenciler kayıtlı oldukları sınıfları görebilir"
+    on public.classes for select
+    to authenticated
+    using (
+        exists (
+            select 1 from public.class_students cs
+            where cs.class_id = public.classes.id and cs.student_id = auth.uid()
+        )
+    );
+
+-- CLASS_STUDENTS RLS
+create policy "Öğretmenler sınıflarına öğrenci ekleyebilir ve yönetebilir"
+    on public.class_students for all
+    to authenticated
+    using (
+        exists (
+            select 1 from public.classes c
+            where c.id = public.class_students.class_id and c.teacher_id = auth.uid()
+        )
+    );
+
+create policy "Öğrenciler kendi sınıf kayıtlarını görüntüleyebilir"
+    on public.class_students for select
+    to authenticated
+    using (auth.uid() = student_id);
+
 -- HOMEWORKS RLS
 create policy "İlgili öğrenci veya öğretmen görüntüleyebilir"
     on public.homeworks for select
     to authenticated
     using (
         auth.uid() = student_id or 
+        auth.uid() = teacher_id or
         exists (
             select 1 from public.lessons l 
             where l.id = public.homeworks.lesson_id and l.teacher_id = auth.uid()
+        ) or
+        exists (
+            select 1 from public.classes c
+            where c.id = public.homeworks.class_id and c.teacher_id = auth.uid()
         )
     );
 
@@ -246,9 +394,13 @@ create policy "Öğretmenler ödev ekleyebilir"
     on public.homeworks for insert
     to authenticated
     with check (
+        auth.uid() = teacher_id or
         exists (
             select 1 from public.lessons l 
             where l.id = public.homeworks.lesson_id and l.teacher_id = auth.uid()
+        ) or exists (
+            select 1 from public.classes c
+            where c.id = public.homeworks.class_id and c.teacher_id = auth.uid()
         ) or exists (
             select 1 from public.profiles p
             where p.id = auth.uid() and p.role = 'teacher'
@@ -260,11 +412,64 @@ create policy "Öğrenci veya öğretmen ödev güncelleyebilir"
     to authenticated
     using (
         auth.uid() = student_id or 
+        auth.uid() = teacher_id or
         exists (
             select 1 from public.lessons l 
             where l.id = public.homeworks.lesson_id and l.teacher_id = auth.uid()
+        ) or
+        exists (
+            select 1 from public.classes c
+            where c.id = public.homeworks.class_id and c.teacher_id = auth.uid()
         )
     );
+
+create policy "Öğretmenler ödev silebilir"
+    on public.homeworks for delete
+    to authenticated
+    using (
+        auth.uid() = teacher_id or
+        exists (
+            select 1 from public.lessons l 
+            where l.id = public.homeworks.lesson_id and l.teacher_id = auth.uid()
+        ) or
+        exists (
+            select 1 from public.classes c
+            where c.id = public.homeworks.class_id and c.teacher_id = auth.uid()
+        )
+    );
+
+-- GÜVENLİK TRİGGER'I: Öğrencilerin Puan ve Geri Bildirim Tahrifatını Önleme
+create or replace function public.check_homework_update_permissions()
+returns trigger as $$
+declare
+    current_user_role text;
+begin
+    select role into current_user_role from public.profiles where id = auth.uid();
+    
+    if current_user_role = 'student' or auth.uid() = old.student_id then
+        if new.score is distinct from old.score then
+            raise exception 'Güvenlik İhlali: Öğrenciler ödev puanını değiştiremez.';
+        end if;
+        if new.teacher_feedback is distinct from old.teacher_feedback then
+            raise exception 'Güvenlik İhlali: Öğrenciler öğretmen değerlendirme notunu değiştiremez.';
+        end if;
+        if new.reviewed_at is distinct from old.reviewed_at then
+            raise exception 'Güvenlik İhlali: Öğrenciler inceleme tarihini değiştiremez.';
+        end if;
+        if new.status in ('reviewed', 'revision_requested') and new.status is distinct from old.status then
+            raise exception 'Güvenlik İhlali: Öğrenciler inceleme durumunu değiştiremez.';
+        end if;
+    end if;
+
+    return new;
+end;
+$$ language plpgsql security definer;
+
+drop trigger if exists enforce_homework_update_permissions on public.homeworks;
+create trigger enforce_homework_update_permissions
+    before update on public.homeworks
+    for each row
+    execute function public.check_homework_update_permissions();
 
 -- PAYMENTS RLS
 create policy "İlgili öğretmen ve öğrenci ödeme kayıtlarını görebilir"
@@ -282,23 +487,29 @@ create policy "İlgili taraflar ödeme kaydını güncelleyebilir"
     to authenticated
     using (auth.uid() = teacher_id or auth.uid() = student_id);
 
--- 5. MESSAGES (Öğrenciler ve Eğitmenler Arası Canlı Mesajlaşma)
-create table if not exists public.messages (
-    id uuid primary key default gen_random_uuid(),
-    sender_id uuid not null references public.profiles(id) on delete cascade,
-    receiver_id uuid not null references public.profiles(id) on delete cascade,
-    content text not null,
-    is_read boolean default false not null,
-    created_at timestamptz default now() not null
-);
+-- SCHEDULE_EVENTS RLS
+create policy "Kullanıcılar kendi program etkinliklerini yönetebilir"
+    on public.schedule_events for all
+    to authenticated
+    using (auth.uid() = user_id);
 
-create index if not exists idx_messages_sender_id on public.messages(sender_id);
-create index if not exists idx_messages_receiver_id on public.messages(receiver_id);
-create index if not exists idx_messages_created_at on public.messages(created_at);
+create policy "Öğretmenler bağlı öğrencilerinin programlarını görüntüleyebilir"
+    on public.schedule_events for select
+    to authenticated
+    using (
+        exists (
+            select 1 from public.teacher_students ts
+            where ts.student_id = public.schedule_events.user_id and ts.teacher_id = auth.uid()
+        )
+        or
+        exists (
+            select 1 from public.class_students cs
+            join public.classes c on c.id = cs.class_id
+            where cs.student_id = public.schedule_events.user_id and c.teacher_id = auth.uid()
+        )
+    );
 
 -- MESSAGES RLS
-alter table public.messages enable row level security;
-
 create policy "Kullanıcılar dahil oldukları mesajları görebilir"
     on public.messages for select
     to authenticated
@@ -309,23 +520,7 @@ create policy "Kullanıcılar mesaj gönderebilir"
     to authenticated
     with check (auth.uid() = sender_id);
 
--- 6. BOOKS (Öğrenci Akıllı Kitaplığı & Kaynaklar)
-create table if not exists public.books (
-    id uuid primary key default gen_random_uuid(),
-    student_id uuid not null references public.profiles(id) on delete cascade,
-    title text not null,
-    publisher text,
-    subject text,
-    topics text[],
-    cover_image_url text,
-    created_at timestamptz default now() not null,
-    updated_at timestamptz default now() not null
-);
-
-create index if not exists idx_books_student_id on public.books(student_id);
-
-alter table public.books enable row level security;
-
+-- BOOKS RLS
 create policy "Kitaplar herkese okunabilir"
     on public.books for select
     to authenticated
@@ -335,6 +530,17 @@ create policy "Öğrenciler kendi kitaplarını ekleyebilir veya güncelleyebili
     on public.books for all
     to authenticated
     using (auth.uid() = student_id);
+
+-- TEACHER_STUDENTS RLS
+create policy "Öğretmen ve öğrenci eşleşmeyi görebilir"
+    on public.teacher_students for select
+    to authenticated
+    using (auth.uid() = teacher_id or auth.uid() = student_id);
+
+create policy "Öğretmenler eşleşme oluşturabilir ve silebilir"
+    on public.teacher_students for all
+    to authenticated
+    using (auth.uid() = teacher_id);
 
 -- ==============================================================================
 -- AUTH.USERS KAYIT TETİKLEYİCİSİ (Otomatik Profil Oluşturma)
@@ -359,128 +565,3 @@ drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
     after insert on auth.users
     for each row execute function public.handle_new_user();
-
--- ==============================================================================
--- 7. CLASSES (Öğretmen Sınıfları) & CLASS_STUDENTS (Sınıf-Öğrenci İlişkisi)
--- ==============================================================================
-create table if not exists public.classes (
-    id uuid primary key default gen_random_uuid(),
-    teacher_id uuid not null references public.profiles(id) on delete cascade,
-    name text not null,
-    grade_level text default '12. Sınıf',
-    academic_year text default '2026-2027',
-    description text,
-    color text default 'indigo',
-    created_at timestamptz default now() not null,
-    updated_at timestamptz default now() not null
-);
-
-create index if not exists idx_classes_teacher_id on public.classes(teacher_id);
-
-drop trigger if exists set_classes_updated_at on public.classes;
-create trigger set_classes_updated_at
-    before update on public.classes
-    for each row
-    execute function update_updated_at_column();
-
-alter table public.classes enable row level security;
-
-create policy "Öğretmenler kendi sınıflarını yönetebilir"
-    on public.classes for all
-    to authenticated
-    using (auth.uid() = teacher_id);
-
-create policy "Öğrenciler kayıtlı oldukları sınıfları görebilir"
-    on public.classes for select
-    to authenticated
-    using (
-        exists (
-            select 1 from public.class_students cs
-            where cs.class_id = public.classes.id and cs.student_id = auth.uid()
-        )
-    );
-
-create table if not exists public.class_students (
-    id uuid primary key default gen_random_uuid(),
-    class_id uuid not null references public.classes(id) on delete cascade,
-    student_id uuid not null references public.profiles(id) on delete cascade,
-    enrolled_at timestamptz default now() not null,
-    unique(class_id, student_id)
-);
-
-create index if not exists idx_class_students_class_id on public.class_students(class_id);
-create index if not exists idx_class_students_student_id on public.class_students(student_id);
-
-alter table public.class_students enable row level security;
-
-create policy "Öğretmenler sınıflarına öğrenci ekleyebilir ve yönetebilir"
-    on public.class_students for all
-    to authenticated
-    using (
-        exists (
-            select 1 from public.classes c
-            where c.id = public.class_students.class_id and c.teacher_id = auth.uid()
-        )
-    );
-
-create policy "Öğrenciler kendi sınıf kayıtlarını görüntüleyebilir"
-    on public.class_students for select
-    to authenticated
-    using (auth.uid() = student_id);
-
--- ==============================================================================
--- 8. SCHEDULE_EVENTS (Akıllı Ders Programı, Okul Dersleri & Kişisel Çalışma Planı)
--- ==============================================================================
-create table if not exists public.schedule_events (
-    id uuid primary key default gen_random_uuid(),
-    user_id uuid not null references public.profiles(id) on delete cascade,
-    title text not null,
-    subject text not null,
-    event_type text not null default 'school', -- 'school' | 'private_lesson' | 'personal_study' | 'review' | 'exam'
-    day_of_week int not null check (day_of_week between 0 and 6), -- 0=Pazartesi, ..., 6=Pazar
-    start_time text not null, -- '09:00'
-    end_time text not null, -- '09:45'
-    specific_date text, -- '2026-10-15' opsiyonel tek seferlik tarih
-    location_or_link text,
-    color text default 'indigo',
-    notes text,
-    is_completed boolean default false,
-    created_at timestamptz default now() not null,
-    updated_at timestamptz default now() not null,
-
-    constraint check_event_times check (end_time > start_time)
-);
-
-create index if not exists idx_schedule_events_user_id on public.schedule_events(user_id);
-create index if not exists idx_schedule_events_day on public.schedule_events(day_of_week);
-create index if not exists idx_schedule_events_type on public.schedule_events(event_type);
-
-drop trigger if exists set_schedule_events_updated_at on public.schedule_events;
-create trigger set_schedule_events_updated_at
-    before update on public.schedule_events
-    for each row
-    execute function update_updated_at_column();
-
-alter table public.schedule_events enable row level security;
-
-create policy "Kullanıcılar kendi program etkinliklerini yönetebilir"
-    on public.schedule_events for all
-    to authenticated
-    using (auth.uid() = user_id);
-
-create policy "Öğretmenler bağlı öğrencilerinin programlarını görüntüleyebilir"
-    on public.schedule_events for select
-    to authenticated
-    using (
-        exists (
-            select 1 from public.teacher_students ts
-            where ts.student_id = public.schedule_events.user_id and ts.teacher_id = auth.uid()
-        )
-        or
-        exists (
-            select 1 from public.class_students cs
-            join public.classes c on c.id = cs.class_id
-            where cs.student_id = public.schedule_events.user_id and c.teacher_id = auth.uid()
-        )
-    );
-

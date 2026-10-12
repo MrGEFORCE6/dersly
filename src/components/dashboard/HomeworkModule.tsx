@@ -105,6 +105,10 @@ export function HomeworkModule({
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (file.size > 20 * 1024 * 1024) {
+        alert('Dosya boyutu 20MB sınırını aşamaz.');
+        return;
+      }
       setSelectedFile(file);
       setFileName(file.name);
     }
@@ -115,6 +119,10 @@ export function HomeworkModule({
     setIsDragging(false);
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       const file = e.dataTransfer.files[0];
+      if (file.size > 20 * 1024 * 1024) {
+        alert('Dosya boyutu 20MB sınırını aşamaz.');
+        return;
+      }
       setSelectedFile(file);
       setFileName(file.name);
     }

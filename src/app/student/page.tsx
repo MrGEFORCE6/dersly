@@ -145,6 +145,10 @@ export default function StudentPortalPage() {
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (file.size > 20 * 1024 * 1024) {
+        showToast('⚠️ Dosya boyutu 20MB sınırını aşamaz.');
+        return;
+      }
       setSelectedFile(file);
     }
   };

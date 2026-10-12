@@ -431,7 +431,7 @@ export function normalizeTimeString(val: any): string | null {
     return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
   }
 
-  let str = String(val).trim().replace('.', ':');
+  const str = String(val).trim().replace('.', ':');
   // Match HH:mm or H:mm
   const match = str.match(/^(\d{1,2}):(\d{2})/);
   if (match) {

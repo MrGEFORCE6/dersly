@@ -525,8 +525,25 @@ export async function uploadFileToStorage(
   file: File | Blob,
   fileName: string
 ): Promise<string> {
+  const fileExt = (fileName.split('.').pop() || 'pdf').toLowerCase();
+
+  // Security: File type validation
+  const allowedHomeworkExts = ['pdf', 'png', 'jpg', 'jpeg', 'webp', 'doc', 'docx'];
+  const allowedAvatarExts = ['png', 'jpg', 'jpeg', 'webp'];
+  const allowed = bucketName === 'homework-files' ? allowedHomeworkExts : allowedAvatarExts;
+
+  if (!allowed.includes(fileExt)) {
+    throw new Error(`Desteklenmeyen dosya türü (.${fileExt}). İzin verilenler: ${allowed.join(', ')}`);
+  }
+
+  // Security: File size validation (20MB for homeworks, 5MB for avatars)
+  const maxSize = bucketName === 'homework-files' ? 20 * 1024 * 1024 : 5 * 1024 * 1024;
+  if ('size' in file && file.size > maxSize) {
+    const maxMb = maxSize / (1024 * 1024);
+    throw new Error(`Dosya boyutu çok büyük. Maksimum ${maxMb}MB yüklenebilir.`);
+  }
+
   const supabase = createClient();
-  const fileExt = fileName.split('.').pop() || 'pdf';
   const cleanFileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
 
   if (isRealSupabaseConfigured()) {
