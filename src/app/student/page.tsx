@@ -344,7 +344,7 @@ export default function StudentPortalPage() {
           <div className="space-y-2">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold" style={{ backgroundColor: 'var(--accent-subtle)', color: 'var(--accent-text)' }}>
               <Sparkles className="w-3.5 h-3.5" />
-              Canlı Öğrenci & Veli Takip Ekranı
+              Canlı Öğrenci Akademik Takip Paneli
             </div>
             <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white">
               Hoş Geldin, {studentProfile.full_name} ✨
@@ -368,7 +368,7 @@ export default function StudentPortalPage() {
               <div className="h-full bg-emerald-500 rounded-full transition-all duration-500" style={{ width: `${percentageUsed}%` }} />
             </div>
             <span className="text-[10px] text-slate-500 dark:text-slate-400 block pt-0.5">
-              Paket bitiminde veli bilgilendirmesi otomatik yapılır.
+              Paket bitiminde ders kredisi bildiriminiz otomatik iletilir.
             </span>
           </div>
         </div>

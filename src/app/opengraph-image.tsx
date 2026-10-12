@@ -99,7 +99,7 @@ export default async function Image() {
             marginBottom: '40px',
           }}
         >
-          Öğretmenler, öğrenciler ve veliler için şeffaf ders takibi, ödev yönetimi, akıllı kütüphane ve TYT/AYT net analizi.
+          Öğretmenler ve öğrenciler için şeffaf ders takibi, ödev yönetimi, akıllı kütüphane ve TYT/AYT net analizi.
         </div>
 
         <div

@@ -306,7 +306,7 @@ export default function DashboardPage() {
               className="text-xs font-medium text-indigo-300 hover:text-white px-3 py-1.5 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/20 transition-all flex items-center gap-1.5"
             >
               <Smartphone className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Öğrenci & Veli Mobil Demo</span>
+              <span className="hidden sm:inline">Öğrenci Mobil Demo</span>
             </Link>
 
             <Link

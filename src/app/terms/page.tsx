@@ -36,7 +36,7 @@ export default function TermsPage() {
               1. Hizmet Tanımı ve Taraflar
             </h2>
             <p>
-              İşbu Kullanım Koşulları; Dersly (&quot;Platform&quot;) ile platforma kayıt olan öğretmen, öğrenci ve veli (&quot;Kullanıcı&quot;) arasındaki hak ve yükümlülükleri düzenler. Dersly, özel ders planlaması, ödev ve içerik takibi, kütüphane organizasyonu ve veli izleme olanağı sunan bir bulut yazılım hizmetidir (SaaS).
+              İşbu Kullanım Koşulları; Dersly (&quot;Platform&quot;) ile platforma kayıt olan öğretmen ve öğrenci (&quot;Kullanıcı&quot;) arasındaki hak ve yükümlülükleri düzenler. Dersly, özel ders planlaması, ödev ve içerik takibi, kütüphane organizasyonu ve akademik takip olanağı sunan bir bulut yazılım hizmetidir (SaaS).
             </p>
           </section>
 

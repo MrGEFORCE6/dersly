@@ -89,7 +89,7 @@ export default function TeachersLoungeFeedPage() {
             author_id: 't-002',
             feed_type: 'teachers_lounge',
             title: 'Öğrencilerde Deneme Sınavı Kaygısını Yönetme Rehberi',
-            content: 'Öğrencinin neti 80 den 70 e düştüğünde veli baskısıyla motivasyon kırılması çok sık yaşanıyor. Bu gibi durumlarda öğrenciye haftalık net dalgalanmalarının öğrenme sürecinin doğal bir parçası olduğunu vurgulayan rehberlik notumuzu ekteki gibi paylaşıyorum.',
+            content: 'Öğrencinin neti 80 den 70 e düştüğünde sınav stresiyle motivasyon kırılması çok sık yaşanıyor. Bu gibi durumlarda öğrenciye haftalık net dalgalanmalarının öğrenme sürecinin doğal bir parçası olduğunu vurgulayan rehberlik notumuzu ekteki gibi paylaşıyorum.',
             media_urls: [],
             tag: 'announcement',
             likes_count: 45,
@@ -150,7 +150,7 @@ export default function TeachersLoungeFeedPage() {
                 Öğretmenler Odası (Akademi) Gizlidir
               </h2>
               <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                Bu alan yalnızca onaylı eğitmenlerin zümre toplantıları ve müfredat paylaşımları için ayrılmıştır. Öğrenci veya veli hesapları bu akışa erişemez.
+                Bu alan yalnızca onaylı eğitmenlerin zümre toplantıları ve müfredat paylaşımları için ayrılmıştır. Öğrenci hesapları bu akışa erişemez.
               </p>
             </div>
             <div className="pt-2">

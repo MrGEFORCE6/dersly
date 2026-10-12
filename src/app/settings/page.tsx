@@ -515,7 +515,7 @@ export default function SettingsPage() {
               {
                 id: 'whatsapp',
                 title: 'WhatsApp Hatırlatıcıları',
-                desc: 'Dersten 2 saat önce öğrenci ve veliye otomatik mesaj',
+                desc: 'Dersten 2 saat önce öğrenciye otomatik ders hatırlatması',
                 checked: notifWhatsapp,
                 toggle: () => setNotifWhatsapp(!notifWhatsapp),
               },

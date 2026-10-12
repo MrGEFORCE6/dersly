@@ -166,10 +166,10 @@ export default function MobilePreviewPage() {
         <div className="max-w-md space-y-5">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-400 text-xs font-semibold border border-indigo-500/20">
             <Sparkles className="w-3.5 h-3.5" />
-            Öğrenci & Veli Pastel-Gece Teması
+            Öğrenci Pastel-Gece Teması
           </div>
           <h1 className="text-3xl font-extrabold text-white tracking-tight leading-tight">
-            Öğrenci & Veli İçin <span className="text-emerald-400">Mobil Deneyim</span>
+            Öğrenciler İçin <span className="text-emerald-400">Mobil Deneyim</span>
           </h1>
           <p className="text-sm text-slate-300 leading-relaxed">
             Koyu ama gözü yormayan Soft Slate zemin (<code className="text-indigo-300">#0f172a</code>), pastel mor ve nane tonları ile tasarlandı.
@@ -219,7 +219,7 @@ export default function MobilePreviewPage() {
                     ✨
                   </div>
                   <h2 className="text-2xl font-black text-white tracking-tight">Dersly</h2>
-                  <p className="text-xs text-slate-400 mt-1">Öğrenci & Veli Takip Portalı</p>
+                  <p className="text-xs text-slate-400 mt-1">Öğrenci Mobil Portalı</p>
                 </div>
 
                 {/* Role Switcher */}
@@ -272,12 +272,12 @@ export default function MobilePreviewPage() {
 
                   <button
                     onClick={() => {
-                      setStudentName(role === 'student' ? 'Zeynep Kaya' : 'Kaya Ailesi (Veli)');
+                      setStudentName(role === 'student' ? 'Zeynep Kaya' : 'Ahmet Yılmaz (Öğretmen)');
                       setIsLoggedIn(true);
                     }}
                     className="w-full mt-2 py-3 rounded-xl bg-[#6ee7b7] text-[#0f172a] font-bold text-xs tracking-wide shadow-lg shadow-emerald-500/20 hover:bg-[#5eead4] transition-all"
                   >
-                    {role === 'student' ? 'Öğrenci Olarak Giriş Yap' : 'Veli Olarak Giriş Yap'}
+                    {role === 'student' ? 'Öğrenci Olarak Giriş Yap' : 'Öğretmen Olarak Giriş Yap'}
                   </button>
                 </div>
 

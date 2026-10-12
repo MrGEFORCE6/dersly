@@ -122,11 +122,11 @@ export default function Home() {
               </Link>
 
               <Link
-                href="/mobile-preview"
+                href="/student"
                 className="px-6 py-3.5 rounded-2xl text-slate-200 hover:text-white font-bold text-sm bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700/80 transition-all flex items-center gap-2 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:outline-none"
               >
                 <Smartphone className="w-4 h-4 text-purple-400" />
-                <span>Öğrenci & Veli Arayüzü</span>
+                <span>Öğrenci Paneli</span>
               </Link>
 
               <Link
@@ -167,7 +167,7 @@ export default function Home() {
                 Özel Ders Koçluğunda İhtiyacınız Olan Her Şey
               </h2>
               <p className="text-xs sm:text-sm text-slate-400">
-                Öğretmen, öğrenci ve veli arasında kesintisiz eşzamanlı çalışan modern modüller.
+                Öğretmen ve öğrenci arasında kesintisiz eşzamanlı çalışan modern modüller.
               </p>
             </div>
 
@@ -179,7 +179,7 @@ export default function Home() {
                 </div>
                 <h3 className="text-lg font-bold text-white">Canlı Ders & Otomatik Saat Düşümü</h3>
                 <p className="text-xs text-slate-300 leading-relaxed">
-                  Öğretmen dersi tamamladığında öğrencinin paket kredisinden otomatik 1 saat düşer. Ders notları ve takvim anında veli ve öğrenci kartlarına yansır.
+                  Öğretmen dersi tamamladığında öğrencinin paket kredisinden otomatik 1 saat düşer. Ders notları ve takvim anında öğrenci paneline yansır.
                 </p>
                 <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-[11px] text-emerald-400 font-mono">
                   <span>✓ İki Yönlü Gerçek Zamanlı</span>
@@ -259,55 +259,42 @@ export default function Home() {
           </div>
         </section>
 
-        {/* 4. Veli, Öğrenci & Öğretmen Avantajları */}
-        <section id="veli-ogrenci" className="py-20 border-b border-slate-800/60 bg-slate-950/40" aria-labelledby="stakeholders-heading">
+        {/* 4. Öğrenci & Öğretmen Avantajları */}
+        <section id="roller" className="py-20 border-b border-slate-800/60 bg-slate-950/40" aria-labelledby="stakeholders-heading">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
             <div className="text-center space-y-3 max-w-2xl mx-auto">
               <span className="text-xs font-bold uppercase tracking-wider font-mono text-indigo-400">
-                Taraflar İçin Şeffaflık
+                Rol Odaklı Deneyim
               </span>
               <h2 id="stakeholders-heading" className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-                Herkes İçin Güven ve Takip Kolaylığı
+                Öğretmen ve Öğrenciler İçin Kusursuz Uyum
               </h2>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <article className="p-6 rounded-3xl glass-panel border border-slate-800 space-y-3">
-                <span className="px-3 py-1 rounded-full text-xs font-bold bg-indigo-500/15 text-indigo-300 inline-block">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+              <article className="p-8 rounded-3xl glass-panel border border-slate-800 space-y-4 shadow-xl">
+                <span className="px-3.5 py-1.5 rounded-full text-xs font-bold bg-indigo-500/15 text-indigo-300 inline-block">
                   👨‍🏫 Öğretmen İçin
                 </span>
-                <h3 className="text-base font-bold text-white">Ders Kaçırma & Saat Karışıklığına Son</h3>
-                <ul className="text-xs text-slate-300 space-y-2">
-                  <li>• Tek tıkla ders tamamlama (-1 saat otomatik)</li>
-                  <li>• Öğrencilerin kalan kredi saatlerini canlı izleme</li>
-                  <li>• Ödevleri PDF olarak açıp notlandırma</li>
-                  <li>• Aylık kazanç ve dinamik abonelik faturası</li>
+                <h3 className="text-lg font-bold text-white">Ders Kaçırma & Saat Karışıklığına Son</h3>
+                <ul className="text-xs text-slate-300 space-y-2.5 leading-relaxed">
+                  <li>• Tek tıkla ders tamamlama ve otomatik kredi düşümü</li>
+                  <li>• Öğrencilerin kalan ders saatlerini ve hedeflerini canlı izleme</li>
+                  <li>• Ödevleri PDF olarak açıp detaylı notlandırma</li>
+                  <li>• Öğretmenler Odası ile zümre paylaşımları ve doküman arşivi</li>
                 </ul>
               </article>
 
-              <article className="p-6 rounded-3xl glass-panel border border-slate-800 space-y-3">
-                <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-300 inline-block">
+              <article className="p-8 rounded-3xl glass-panel border border-slate-800 space-y-4 shadow-xl">
+                <span className="px-3.5 py-1.5 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-300 inline-block">
                   👩‍🎓 Öğrenci İçin
                 </span>
-                <h3 className="text-base font-bold text-white">Hedefe Yürürken Motivasyon & Koçluk</h3>
-                <ul className="text-xs text-slate-300 space-y-2">
-                  <li>• TYT / AYT Net vitrini ve soru hedefi çubuğu</li>
-                  <li>• Çözülen soruları fotoğrafla/PDF ile tek tıkla teslim</li>
-                  <li>• Takıldığı sorularda 7/24 Sokratik AI desteği</li>
-                  <li>• Yaklaşan dersler ve geri sayım sayacı</li>
-                </ul>
-              </article>
-
-              <article className="p-6 rounded-3xl glass-panel border border-slate-800 space-y-3">
-                <span className="px-3 py-1 rounded-full text-xs font-bold bg-purple-500/15 text-purple-300 inline-block">
-                  👨‍👩‍👧 Veli İçin
-                </span>
-                <h3 className="text-base font-bold text-white">Tam Finansal Şeffaflık & İç Huzuru</h3>
-                <ul className="text-xs text-slate-300 space-y-2">
-                  <li>• Çocuğunun kalan ders saatini anlık görme</li>
-                  <li>• Yapılan ödemelerin ve dekontların dökümü</li>
-                  <li>• Öğretmenin bıraktığı sesli ders değerlendirmeleri</li>
-                  <li>• Çocuğunun deneme net gelişim grafiği</li>
+                <h3 className="text-lg font-bold text-white">Hedefe Yürürken Motivasyon & Koçluk</h3>
+                <ul className="text-xs text-slate-300 space-y-2.5 leading-relaxed">
+                  <li>• TYT / AYT Net vitrini ve kişiselleştirilmiş soru hedefi</li>
+                  <li>• Çözülen soruları fotoğrafla veya PDF ile tek tıkla teslim</li>
+                  <li>• Takıldığı sorularda 7/24 Sokratik pedagojik AI koç desteği</li>
+                  <li>• Öğrenci Kampüsü ile akran etkileşimi ve çalışma odaları</li>
                 </ul>
               </article>
             </div>

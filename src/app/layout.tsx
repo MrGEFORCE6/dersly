@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 
 const siteUrl = 'https://rad-marigold-ff55c6.netlify.app';
 const siteDescription =
-  'Özel ders öğretmenleri, öğrenciler ve veliler için şeffaf ders takibi, ödev yönetimi, akıllı kütüphane ve TYT/AYT net analizi sunan modern eğitim platformu.';
+  'Özel ders öğretmenleri ve öğrencileri için şeffaf ders takibi, ödev yönetimi, akıllı kütüphane ve TYT/AYT net analizi sunan modern eğitim platformu.';
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     'özel ders takip',
     'YKS hazırlık',
     'öğrenci koçluğu',
-    'veli bilgilendirme sistemi',
+    'öğrenci takip sistemi',
     'ders takvimi',
     'ödev takibi',
     'dersly',

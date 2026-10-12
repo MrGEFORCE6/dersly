@@ -1,17 +1,17 @@
 # Dersly (Eski Adıyla DersPompa)
 
-> Dersly, özel ders öğretmenleri, öğrenciler ve veliler için tasarlanmış kurumsal özel ders ve öğrenci yönetim platformudur.
+> Dersly, özel ders öğretmenleri ve öğrencileri için tasarlanmış kurumsal özel ders ve öğrenci yönetim platformudur.
 
 ## Genel Bakış
 - **Platform Adı**: Dersly
 - **Canlı Adres**: https://rad-marigold-ff55c6.netlify.app/
-- **Hedef Kitle**: Özel ders veren öğretmenler, YKS/LGS öğrencileri ve veliler.
+- **Hedef Kitle**: Özel ders veren öğretmenler ve YKS/LGS öğrencileri.
 - **Temel Yetenekler**:
   - Şeffaf ders takvimi ve otomatik ders saati/kredi düşümü.
   - Dijital ödev ve kaynak yönetimi (PDF ve doküman depolama).
   - Akıllı öğrenci kitaplığı ve yapay zeka destekli konu/ünite OCR taraması.
   - Öğrenci kampüsü ve imece soru havuzu (akran yardımlaşması).
-  - Veli izleme portalı (aylık ders saatleri, ödev başarı oranı, sesli öğretmen geri bildirimleri).
+  - Öğretmenler Odası ile zümre paylaşımları ve pedagojik koordinasyon.
   - Banka düzeyinde güvenli veri izolasyonu ve rol tabanlı erişim kontrolü (RBAC).
 
 ## Fiyatlandırma Modeli

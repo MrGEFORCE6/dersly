@@ -36,7 +36,7 @@ export default function PrivacyPage() {
               1. Veri Sorumlusu ve Kapsam
             </h2>
             <p>
-              Dersly Eğitim Teknolojileri A.Ş. (&quot;Dersly&quot; veya &quot;Şirket&quot;) olarak, platformumuzu kullanan eğitmenler, öğrenciler ve velilerin kişisel verilerinin korunmasına ve mahremiyetine en üst düzeyde önem veriyoruz. 6698 sayılı Kişisel Verilerin Korunması Kanunu (&quot;KVKK&quot;) uyarınca veri sorumlusu sıfatıyla hareket etmekteyiz.
+              Dersly Eğitim Teknolojileri A.Ş. (&quot;Dersly&quot; veya &quot;Şirket&quot;) olarak, platformumuzu kullanan eğitmenler ve öğrencilerin kişisel verilerinin korunmasına ve mahremiyetine en üst düzeyde önem veriyoruz. 6698 sayılı Kişisel Verilerin Korunması Kanunu (&quot;KVKK&quot;) uyarınca veri sorumlusu sıfatıyla hareket etmekteyiz.
             </p>
           </section>
 
@@ -46,12 +46,12 @@ export default function PrivacyPage() {
               2. Toplanan Kişisel Veriler ve İşlenme Amaçları
             </h2>
             <p>
-              Hizmetlerimizin ifası, ders planlaması ve veli bilgilendirmesi amacıyla aşağıdaki veriler işlenmektedir:
+              Hizmetlerimizin ifası, ders planlaması ve eğitim süreçlerinin takibi amacıyla aşağıdaki veriler işlenmektedir:
             </p>
             <ul className="list-disc pl-5 space-y-1 text-xs sm:text-sm">
               <li><strong>Kimlik ve İletişim Bilgileri:</strong> Ad, soyad, e-posta adresi, telefon numarası.</li>
               <li><strong>Eğitim ve Performans Verileri:</strong> TYT/AYT deneme sınavı netleri, konu başarı analizleri, ödev teslim durumları ve ders katılım istatistikleri.</li>
-              <li><strong>Kullanıcı İçeriği:</strong> Ders sırasında işlenen dijital tahta notları, öğretmen sesli geri bildirimleri, kütüphaneye eklenen taranmış kitap üniteleri.</li>
+              <li><strong>Kullanıcı İçeriği:</strong> Ders sırasında işlenen dijital tahta notları, öğretmen değerlendirmeleri, kütüphaneye eklenen taranmış kitap üniteleri.</li>
               <li><strong>Finansal Bilgiler:</strong> Satın alınan özel ders paketleri, kullanılan ve kalan ders saatleri, ödeme teyit kayıtları.</li>
             </ul>
           </section>
@@ -62,7 +62,7 @@ export default function PrivacyPage() {
               3. Banka Düzeyinde Veri İzolasyonu ve Güvenlik
             </h2>
             <p>
-              Verileriniz, satır düzeyinde güvenlik (Row Level Security - RLS) politikaları ile izole edilmiştir. Bir öğrencinin sınav netleri ve kişisel bilgileri, yalnızca o öğrenciye, eşleşmiş velisine ve ders aldığı öğretmene özel olarak şifreli tüneller üzerinden sunulur. Üçüncü şahıslara veya reklam ağlarına hiçbir şekilde veri aktarımı yapılmaz.
+              Verileriniz, satır düzeyinde güvenlik (Row Level Security - RLS) politikaları ile izole edilmiştir. Bir öğrencinin sınav netleri ve kişisel bilgileri, yalnızca o öğrenciye ve ders aldığı öğretmene özel olarak şifreli tüneller üzerinden sunulur. Üçüncü şahıslara veya reklam ağlarına hiçbir şekilde veri aktarımı yapılmaz.
             </p>
           </section>
 

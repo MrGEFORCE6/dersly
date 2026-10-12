@@ -361,7 +361,7 @@ export function LessonDetailModal({
 
               {saveVoiceSuccess && (
                 <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold">
-                  ✓ Öğrenci & Veli paneline iletildi
+                  ✓ Öğrenci paneline iletildi
                 </span>
               )}
             </div>
